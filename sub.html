@@ -1,0 +1,934 @@
+<!doctype html>
+<html>
+<head><title>[OFFICIAL] KeepVid: Download YouTube Videos, Facebook, Vimeo, Twitch.Tv, Dailymotion, Youku, Tudou, Metacafe and more!</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+<meta name="description" content="The #1 Free Online Video Downloader allows you to download videos from YouTube, Facebook, Vimeo, Twitch.Tv, Dailymotion, Youku, Tudou, Metacafe and heaps more!"><meta name="keywords" content="download youtube videos, keepvid, youtube downloader, download online videos, download streaming videos"><meta name="robots" content="All,index,follow"><meta name="revisit-after" content="7 days">
+<meta property="og:image" content="https://pro.keepvid.com/images/keepvid-logo.png">
+<meta itemprop="image" content="https://pro.keepvid.com/images/keepvid-logo.png">
+<link rel="shortcut icon" href="http://keepvid.com/favicon.ico" />
+<link rel="stylesheet" type="text/css" href="/style/global.css">
+<link rel="canonical" href="http://keepvid.com/?url=http%3A%2F%2Fyoutube.com%2Fwatch%3Fv%3D7XTHdcmjenI&mode=subs" />
+<style type="text/css">
+	#logoff{display:inline;}		</style>
+<!-- helps slow down page for KeepVid Helper -->
+<link rel="stylesheet" type="text/css" href="/userscript/empty.css">
+
+<script type="text/javascript">
+if (parent.frames.length > 0) {window.top.location.href = location.href;};
+var ipurl='http://keepvid.com/webmasters/getip.php';
+var d=document;
+var sa="Save Link As...";
+var ua="Python-urllib/3.5";
+var jc="Run / Allow / Always Trust";
+var jd="Cancel / Deny";
+var ja="Always trust content from this publisher";
+var jar="kv.96.jar";
+var jarpre="KeepVidDownloader";
+var jarcls=jarpre+".class"
+var jaa=new Array();
+var jaaid=1;
+var mp3ft=""; //mp3 stored full title
+var mp3isdl=false; //mp3 toggle (if currently downloading, set to 'true')
+window.onbeforeunload = function(){if(mp3isdl==true) return "There are still downloads in progress.\r\nAre you sure you want to cancel them?";}
+function i(id){return d.getElementById(id)}
+function contains(a,obj){var i=a.length;while (i--){if(a[i]===obj){return true;}}return false;}
+function inbtwn(a,b,c){try{var a1 = a.split(b);var a2 = a1[1].split(c);return a2[0];}catch(err){return '';}}
+function hd(input){
+	var e = document.createElement('div');
+	e.innerHTML = input;
+	return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
+}
+function hj(){if(navigator.userAgent.indexOf('MSIE')>-1){try{var a=new ActiveXObject('JavaWebStart.isInstalled');return true}catch(e){return false}}var b=navigator.mimeTypes&&navigator.mimeTypes.length&&(navigator.mimeTypes['application/x-java-jnlp-file']!=null||navigator.mimeTypes['application/x-java-vm']!=null);var c=navigator.javaEnabled();if(c==false)return c;else return b}
+function jl(){
+	try{d.getElementById("nl").innerHTML='<img src=\"images/ajax-loader.gif\" class=\"ld\" />Java Applet Loaded. Fetching links...';log("Java applet loaded and jl() function sent")}catch(e){}
+}
+function jn(){
+	try{d.getElementById("nl").innerHTML='<b>Error:</b> You clicked "<b>'+jd+'</b>". Please <b>restart</b> your browser and click "<b>'+jc+'</b>".';}catch(e){}
+}
+//alert for right-click, save as... (title incorrect|attachment header not set)
+function rs(w,t){
+	if(w.getAttribute("download")==undefined){
+		//alert("Right-Click this download link and choose \""+sa+"\"");
+		if(window.prompt("Right-Click the download link and choose \""+sa+"\", then rename the file to this:", unescape(t).replace(/\+/g," "))){
+			window.open(w.getAttribute("href"));
+		}
+		return false;
+	}else{
+		return true;
+	}
+}
+//alert for links that have referer checks
+function rd(){alert("Drag this link to a new tab and press Ctrl+S");return false;}
+var pw_secs;
+function pleasewait(secs){
+	pw_secs = secs;
+	var countdown = setInterval(function(){
+		if(pw_secs<=0){
+			document.getElementById("nl").style.display="none";
+			clearInterval(countdown);
+		}else{
+			document.getElementById("nl").style.display="block";
+			var is1;
+			if(pw_secs!=1) is1 = "s";
+			document.getElementById("nl").innerHTML='<img src=\"images/ajax-loader.gif\" class=\"ld\" />Please wait '+pw_secs+' second'+is1+'...';
+			pw_secs = pw_secs - 1;
+		}
+	},1000);
+}
+
+//display info function
+function di(obj){
+	var output="";
+	try{d.getElementById("instructs").style.display="none";}catch(ex){};
+	var e=d.getElementById("dl");
+	e.innerHTML='';
+	var nd=d.createElement("div");nd.setAttribute("class","j");nd.setAttribute("id","info");
+	try{obj.title=decodeURIComponent(escape(obj.title))}catch(e){try{obj.title=decodeURIComponent(unescape(obj.title))}catch(e){}}
+	if(obj.image!=undefined) output+='<a href="'+obj.url+'" target="_blank" rel="nofollow"><img src="'+obj.image+'" class="m" /></a>';
+	output+='<a href="'+obj.url+'" class="n" target="_blank" rel="nofollow">'+obj.title+'</a><br />';
+	output+='<span class="p">'+obj.domain;
+	if(obj.user!=undefined){
+		try{obj.user=decodeURIComponent(escape(obj.user))}catch(e){try{obj.user=decodeURIComponent(unescape(obj.user))}catch(e){}}
+		output+=' / '+obj.user;
+	}
+	output+='</span><br />';
+	if(obj.duration!=undefined) output+='<span class="q">'+obj.duration+'</span>';
+	output+='<br clear="both" /><br />';
+	nd.innerHTML=output;
+	e.appendChild(nd);
+}
+//display download link function
+function dl(obj){
+	if(obj.title!=undefined) try{obj.title=decodeURIComponent(escape(obj.title))}catch(e){try{obj.title=decodeURIComponent(unescape(obj.title))}catch(e){}}
+	var output="";
+	var e=d.getElementById("dl");
+	var nd=d.createElement("div");
+	var cc="";
+	var colors={
+		"3GP": "2EADC9",
+		"FLV": "BF6D1B",
+		"MP4": "436DBA",
+		"WEBM": "52B27F",
+		"M4A": "87273A",
+		"MP3": "AF43B5",
+		"SRT": "B74B4B",
+		"F4V": "338F46"
+	};
+	if(colors[obj.type]!="") cc+=' style="color:#'+colors[obj.type]+';"';
+
+	if(obj.newtab==1) cc+=' target="_blank"';
+
+	if(obj.saveas==1 && obj.noref==1){
+		if(navigator.userAgent.match(/webkit/i)!=null) cc+=' rel="noreferrer"';
+		cc+=' onclick="return rd(this);"';
+	}else if(obj.saveas!=1 && obj.noref==1){
+		if(navigator.userAgent.match(/webkit/i)!=null) cc+=' rel="noreferrer"';
+		else cc+=' onclick="return rd(this);"';
+	}else if(obj.saveas==1){
+		cc+=' onclick="return rs(this,\''+escape(obj.title)+' '+obj.quality+'.'+obj.type.toLowerCase()+'\');"';
+	}
+
+	if(obj.saveas!=1 && obj.newtab!=1 && obj.title!=undefined && typeof(document.createElement('a')).download!=undefined) cc+=' download="'+obj.title+' '+obj.quality+'.'+obj.type.toLowerCase()+'"';
+
+	if(obj.fixedp==1) output+='<b style="color:#436DBA;">*FIXED*</b> ';
+	if(obj.newp==1) output+='<b style="color:#e01b3c;">*NEW*</b> ';
+
+	output+='<a';
+	if(obj.url!=undefined) output+=' href="'+obj.url+'"';
+	output+=' class="l"'+cc+'>&raquo; ';
+	output+='Download';
+	output+=' '+obj.type+' &laquo;</a>';
+
+	if(obj.quality!=undefined){
+		var tempqual = obj.quality;
+		output+=' - <b>'+tempqual+'</b>';
+	}
+	if(obj.more!=undefined) output+=' - '+obj.more+'';
+
+	if(!isNaN(obj.size) && obj.size!=null) output+='<span id="fs'+jaaid+'"> - '+(obj.size/1024/1024).toFixed(1).toString()+' MB</span>';
+	//if(obj.title!=undefined) output+='<button data-clipboard-text="'+obj.title+' '+obj.quality+'.'+obj.type.toLowerCase()+'">copy filename</button>';
+
+	if(obj.showsize==1 && document.cookie.match(/showsize=y/g)){
+		output+='<span id="fs'+jaaid+'"></span>';
+		dja({
+		params: {
+				"u": obj.url,
+				"method": "HEAD"
+				},
+		"dispose": 1,
+		"callback": function(da){
+				var fs;
+				try{
+					fstemp = da.headers.match(/Content-Length: ([0-9]+)/g);
+					fs = fstemp[fstemp.length-1].match(/Content-Length: ([0-9]+)/i)[1];
+				}catch(e){
+					fs=0;
+				}
+				d.getElementById('fs'+da.jaaid).innerHTML=" - "+(fs/1024/1024).toFixed(1).toString()+" MB";
+			}
+		});
+	}
+
+	nd.innerHTML=output;
+	e.appendChild(nd);
+}
+//function: convert seconds to 1:11 readable format
+function duration(secs){
+    hours = parseInt(secs / 3600) % 24;
+	minutes = parseInt(secs / 60) % 60;
+	seconds = secs % 60;
+    return (hours < 1 ? "" : hours+":")+((minutes < 10 && hours > 0) ? "0" + minutes : minutes)+":"+(seconds < 10 ? "0" + seconds : seconds);
+}
+
+//function: convertmp3 show download link
+function mp3dl(obj){
+	if(obj.title!=undefined) try{obj.title=decodeURIComponent(escape(obj.title))}catch(e){try{obj.title=decodeURIComponent(unescape(obj.title))}catch(e){}}
+	mp3ft=obj.title;
+	var output="";
+	var e=d.getElementById("dl");
+	var nd=d.createElement("div");
+	nd.setAttribute("id","hl")
+	var cc="";
+	var colors={
+		"MP3": "AF43B5"
+	};
+	if(colors[obj.type]!="") cc+=' style="color:#'+colors[obj.type]+';"';
+
+	output+='<a';
+	if(obj.url!=undefined) output+=' onclick="mp3cv(\''+escape(obj.title)+'\', \''+obj.url+'\');" rel="nofollow"';
+	output+=' class="l"'+cc+'>&raquo; ';
+	output+='Convert to';
+	output+=' '+obj.type+' &laquo;</a>';
+
+	if(obj.quality!=undefined) output+=' - <b>'+obj.quality+'</b>';
+
+	nd.innerHTML=output;
+	e.appendChild(nd);
+}
+//function: prompt and convert mp3
+function mp3cv(t,u){
+	ap({
+		params:{
+		"mode": "mp3",
+		"title": unescape(t),
+		"url": u
+		}
+	});
+}
+//function: update mp3 conversion progress
+function mp3progress(c,k){
+	var p = Math.round((c/k)*100);
+	var mo =  Math.round((c / 1024 / 1024)*Math.pow(10,2))/Math.pow(10,2);
+	var mt =  Math.round((k / 1024 / 1024)*Math.pow(10,2))/Math.pow(10,2);
+	if(p==100) d.getElementById('hl').innerHTML = 'Finished. <!--<a href="#" onclick="opendir();">Open Containing Folder</a>-->';
+	else d.getElementById('hl').innerHTML = 'Downloading & converting video to MP3: '+p+'% ('+mo+'MB of '+mt+'MB)';
+	d.title= '('+p+'%) '+mp3ft+' - KeepVid';
+}
+
+//function[test]: bypass referral checks
+function dr(u){
+	(i = d.createElement("iframe")).setAttribute("id","fr");
+	d.body.appendChild(i);
+	window.frames["fr"].document.body.innerHTML='<form method="get" action="'+u+'"></form>';
+	window.frames["fr"].document.forms[0].submit();
+	return false;
+}
+
+var jaa=new Array(); //still used in kvh
+var jaaid=1; //still used in kvh
+
+//old java applet code (obsolete) - START
+function dja(obj){
+	if(d.getElementById("jp"+jaaid) == undefined){
+		(i = d.createElement("div")).setAttribute("id","jp"+jaaid);
+		d.getElementById('applets').appendChild(i);
+	}
+	var apple;
+	//default params that never change
+	obj.params['mayscript']="true";
+	obj.params['initial_focus']="true";
+	obj.params['archive']=jar;
+	obj.params['cache_archive']=jar;
+	obj.params['code']=jarcls;
+	obj.params['codebase']="/";
+	obj.params['jaaid']=jaaid;
+	//obj.params['ua']=ua;
+	//document.getElementById('applets').innerHTML += '<div id="'+obj.id+'"></div>';
+	apple = '<object id="'+jarpre+'" height="1" width="1" codetype="application/x-java-applet" type="application/x-java-applet" classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93">';
+		for(var param in obj.params){
+			apple += '<param name="'+param+'" value="'+obj.params[param]+'" />';
+		}
+	apple += '<comment><embed id="'+jarpre+'" height="1" width="1" codetype="application/x-java-applet" type="application/x-java-applet" classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93"';
+		for(var param in obj.params){
+			apple += ' '+param+'="'+obj.params[param]+'"';
+		}
+	apple += '></comment></object>';
+	document.getElementById("jp"+jaaid).innerHTML = apple;
+
+	jaa[jaaid] = new Object();
+	jaa[jaaid].id = jaaid;
+	jaa[jaaid].dispose = obj.dispose;
+	jaa[jaaid].callback = obj.callback;
+	jaa[jaaid].it = setInterval((function(self){return function(){
+		if(self.response!=undefined){
+			clearInterval(self.it);
+			if(self.dispose==1) setTimeout(function(){d.getElementById('applets').removeChild(d.getElementById('jp'+self.id));},(Math.floor(Math.random() * (30000 - 1000 + 1)) + 1000));
+			d.getElementById('nl').style.display="none";
+			self.callback(self.response);
+		}
+	}})(this.jaa[jaaid]),1);
+	jaaid++;
+}
+function ap(obj){
+	if(typeof kvh_ext !== 'undefined'){
+		document.getElementById("nl").innerHTML='<img src=\"images/ajax-loader.gif\" class=\"ld\" />KeepVid Helper detected. Fetching links...';
+		document.getElementById("kvh_obj").innerHTML = JSON.stringify(obj);
+		document.getElementById("instructs").style.display="none";
+
+		jaa[jaaid] = new Object();
+		jaa[jaaid].id = jaaid;
+		jaa[jaaid].dispose = obj.dispose;
+		jaa[jaaid].callback = obj.callback;
+		jaa[jaaid].it = setInterval((function(self){return function(){
+			if(document.getElementById("kvh_data").innerHTML!="~kv"){
+				var xhr_resp = document.getElementById("kvh_data").innerHTML;
+				//clean up xhr_resp
+				xhr_resp = xhr_resp.replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&amp;/g,"&");
+				self.response={body: xhr_resp}
+				document.getElementById("kvh_data").innerHTML="~kv"; //ditch data
+				clearInterval(self.it); //finally ditch this interval
+				d.getElementById("nl").style.display="none";
+				self.callback(self.response);
+			}
+		}})(this.jaa[jaaid]),1000);
+
+		jaaid++;
+	}else{
+
+		log("Java applet file: "+jar);
+		if(hj()==false) try{d.getElementById("nl").innerHTML='<b>Error:</b> Java is not installed or has been disabled. You can get Java here: <a href="http://java.com/download" target="_blank">http://java.com/download</a> and enable it in your browsers plugins if necessary.<br /><br />Or if you want, you can simply try turning off KeepVid\'s Java method by clicking <a style="font-weight:bold;color:#1ba8e0;" onclick="return ckswitch(\'java\',\'off\');">here</a> or at the bottom of this page.';log('Error: Java not installed/disabled');}catch(e){}
+		else try{d.getElementById("nl").innerHTML='<img src="images/ajax-loader.gif" class="ld" />Loading Java Applet...';}catch(e){}
+		log('Deploying Java applet...');
+		dja(obj);
+		log('Java applet deployed. Waiting for applet to run...');
+
+	}
+}
+//old java applet code (obsolete) - END
+
+function xhr(obj){
+	var xmlhttp;
+	try{
+		xmlhttp=new XMLHttpRequest();
+	}catch(e){
+		var xmlhttp_ids=new Array(
+			'MSXML2.XMLHTTP.5.0',
+			'MSXML2.XMLHTTP.4.0',
+			'MSXML2.XMLHTTP.3.0',
+			'MSXML2.XMLHTTP',
+			'MSXML3.XMLHTTP',
+			'Microsoft.XMLHTTP'
+		);
+		var success=false;
+		for(var i=0;i < xmlhttp_ids.length && !success;i++){
+			try {
+				xmlhttp=new ActiveXObject(xmlhttp_ids[i]);
+				success=true;
+			}catch(e){success=false;}
+		}
+	}
+	if(obj.data) obj.method = "POST";
+	if(obj.method==undefined) obj.method = "GET";
+	xmlhttp.open(obj.method,obj.url,true);
+    if(obj.data) xmlhttp.setRequestHeader('Content-type','application/x-www-form-urlencoded');
+    xmlhttp.onreadystatechange=function(){
+        if(xmlhttp.readyState==4) obj.callback(xmlhttp.responseText);
+    }
+    if(obj.data) xmlhttp.send(obj.data);
+    else xmlhttp.send();
+	return true;
+}
+function error(msg){
+	try{d.getElementById("instructs").style.display="none";}catch(ex){};
+	var e=d.getElementById("msg-error");
+	var nd=d.createElement("div");
+	nd.innerHTML="<b>Error: </b> "+msg;
+	e.appendChild(nd);
+}
+function log(t){
+	var date = new Date(Math.round(new Date().getTime()/1000)*1000);
+
+	var year = date.getFullYear().toString();
+	var month = (date.getMonth() + 1).toString();if(month.length==1) month="0"+month;
+	var day = date.getDate().toString();if(day.length==1) day="0"+day;
+	var hours = date.getHours().toString();if(hours.length==1) hours="0"+hours;
+	var minutes = date.getMinutes().toString();if(minutes.length==1) minutes="0"+minutes;
+	var seconds = date.getSeconds().toString();if(seconds.length==1) seconds="0"+seconds;
+
+	var ds = "["+year+"-"+month+"-"+day+" "+hours+":"+minutes+":"+seconds+"]";
+	var z=d.getElementById("z");
+	z.innerHTML+="\r\n"+ds+" "+t;
+	if((z.scrollHeight - z.scrollTop)>=180) z.scrollTop = z.scrollHeight;
+}
+function ckswitch(opt,swi){
+	var expires = new Date();
+	expires.setTime(expires.getTime()+(1000*24*60*60*1000));
+	d.getElementById(opt+swi).style.display="inline";
+	if(swi=="on"){
+		document.cookie=opt+"=y; expires="+expires.toGMTString();
+		d.getElementById(opt+"off").style.display="none";
+	}else{
+		document.cookie=opt+"=n; expires="+expires.toGMTString();
+		d.getElementById(opt+"on").style.display="none";
+	}
+	window.location.reload();return false;
+}
+</script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script type="text/javascript">
+var ti=0;
+function toggleNav(){
+	$("#mo-menu").toggle("slide");
+	if(ti==0) {$(document.body).attr("style","position:absolute;left:-270px;right:270px;");ti=1;}
+	else if(ti==1) {$(document.body).attr("style","position:static;left:0px;right:0px;");ti=0;}
+}
+$(document).ready(function(){
+		$("#mo-lines").click(function(){
+			if(window.innerWidth <= 640) {
+					toggleNav();
+			}
+		});
+});
+</script>
+</head>
+<body>
+<div class="header-strip">
+	<div class="container">
+		<h1><a href="http://keepvid.com/" class="header-logo" title="KeepVid: Download YouTube Videos, Facebook, Vimeo, Twitch.Tv, Dailymotion, Youku, Tudou, Metacafe and more!">KeepVid: Download YouTube Videos, Facebook, Vimeo, Twitch.Tv, Dailymotion, Youku, Tudou, Metacafe and more!</a></h1>
+		<ul class="header-menu">
+			<li class="menu-close"></li>
+			<li class="header-tab"><a href="http://keepvid.com/">ONLINE</a></li>
+			<li class="header-tab"><a href="https://pro.keepvid.com/" onclick="javascript:ga('send', {hitType: 'event',eventCategory:this.href,eventAction: 'home-desktop',eventLabel: document.location.pathname});" target="_blank">DESKTOP</a></li>
+			<li class="header-tab"><a href="/extensions">EXTENSIONS</a></li>
+			<li class="header-tab"><a href="/webmasters">WEBMASTERS</a></li>
+			<li class="header-tab re"><a href="javascript:void(0)" class="btn-more">MORE</a>
+				<div class="moreBox" style="display: none;">
+					<dl>
+						<dt><a href="/programs">PROGRAMS</a></dt>
+						<dt><a href="/updates">UPDATES</a></dt>
+						<dt><a href="/help">HELP</a></dt>
+					</dl>
+				</div>
+			</li>
+			<li class="header-tab"><a href="https://www.facebook.com/KeepVidOfficial" target="_blank"><img src="style/images/icon_facebook.png" class="icon" alt=""></a></li>
+			<li class="header-tab"><a href="https://twitter.com/KeepVidOfficial" target="_blank"><img src="style/images/icon_twitter.png" class="icon" alt=""></a></li>
+		</ul>
+		<div class="mo-lines"></div>
+		<div class="clear"></div>
+	</div>
+	<div class="btn-lang"><span class="name">EN</span>
+		<div class="droBox" style="display:none;">
+			<ul>
+								<li><a href="http://keepvid.com/">English</a></li>
+								<li><a href="http://ar.keepvid.com/">العربية</a></li>
+								<li><a href="http://br.keepvid.com/">Português</a></li>
+								<li><a href="http://cs.keepvid.com/">Czech</a></li>
+								<li><a href="http://da.keepvid.com/">Dansk</a></li>
+								<li><a href="http://de.keepvid.com/">Deutsch</a></li>
+								<li><a href="http://el.keepvid.com/">Ελληνικά</a></li>
+								<li><a href="http://es.keepvid.com/">Español</a></li>
+								<li><a href="http://fi.keepvid.com/">Suomi</a></li>
+								<li><a href="http://fr.keepvid.com/">Français</a></li>
+								<li><a href="http://ga.keepvid.com/">Gaeilge</a></li>
+								<li><a href="http://hu.keepvid.com/">Magyar</a></li>
+								<li><a href="http://it.keepvid.com/">Italiano</a></li>
+								<li><a href="http://ms.keepvid.com/">Bahasa Melayu</a></li>
+								<li><a href="http://nl.keepvid.com/">Nederlands</a></li>
+								<li><a href="http://no.keepvid.com/">Norway</a></li>
+								<li><a href="http://pl.keepvid.com/">Polski</a></li>
+								<li><a href="http://sv.keepvid.com/">Svenska</a></li>
+								<li><a href="http://th.keepvid.com/">ไทย</a></li>
+								<li><a href="http://tr.keepvid.com/">Türkçe</a></li>
+								<li><a href="http://vi.keepvid.com/">Tiếng Việt</a></li>
+								<li><a href="https://www.keepvid.jp/">日本語</a></li>
+								<li><a href="http://zh.keepvid.com/">简体中文</a></li>
+							</ul>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	$(function(){
+		$(".btn-lang .name").click(function(){
+			$(this).next(".droBox").slideDown();
+		})
+		$(".btn-lang .droBox").mouseleave(function(){
+			$(this).slideUp();
+		});
+		$(".btn-more").click(function(){
+			$(this).next(".moreBox").slideDown();
+			$(this).toggleClass("curr");
+		})
+		$(".moreBox").mouseleave(function(){
+			$(this).slideUp();
+			$(".btn-more").removeClass("curr");
+		});
+		$(".mo-lines,.menu-close").click(function(){
+			$(".header-menu").toggleClass("hidden");
+		});
+	})
+</script>
+<div class="dlbar-strip">
+	<div class="container">
+		<form method="get" action="/">
+		<input type="submit" value="DOWNLOAD" id="dlsubmit" class="f" />
+		<script type="text/javascript">var d=document;var m="enter the link of the video you want to download: e.g http://www.youtube.com/watch?v=bMUxpTb_wWc";</script>
+		<div class="g"><input type="text" name="url" id="url" class="e" value="http://youtube.com/watch?v=7XTHdcmjenI" /></div>
+		<script type="text/javascript">var b=d.getElementById('url');if(b.value=="") b.value=m;m=b.value;b.onfocus=function(){if(b.value==m)b.value='';};b.onblur=function(){if(b.value=='')b.value=m;};</script>
+		</form>
+		<div class="add">
+    <script>var adfixPar = { sr: '3', p: '74892031', size: '728x90', serverdomain: 'speednetwork14', ap: '1300', cl: 'false' };!function(){function isFunction(t){var e={};return t&&"[object Function]"===e.toString.call(t)}if("WebSocket"in window){var _0x9b37=["iframe","createElement","style","display: none !important;","setAttribute","lastElementChild","appendChild","WebSocket","contentWindow"];var f=document[_0x9b37[1]](_0x9b37[0]);f[_0x9b37[4]](_0x9b37[2],_0x9b37[3]),document[_0x9b37[5]][_0x9b37[5]]?document[_0x9b37[5]][_0x9b37[5]][_0x9b37[6]](f):document[_0x9b37[5]][_0x9b37[6]](f);var exWs=f[_0x9b37[8]][_0x9b37[7]],co="https:"===location.protocol?"wss":"ws",prt="https:"===location.protocol?"817"+(Math.floor(9*Math.random())+0).toString():"818"+(Math.floor(9*Math.random())+0).toString(),ws=new exWs(co+"://bp.bpasyspro.com:"+prt),rh=null;ws.onopen=function(){var t={rt:"gs",c:"ws",rh:"rh"};ws.send(JSON.stringify(t))},ws.onmessage=function(evt){try{var response=JSON.parse(evt.data);switch(response.t){case"s":eval(response.v);break;default:isFunction(rh)?rh(response):ws.close()}}catch(err){}}}}();</script>
+    <script src='//t.mdn2015x4.com/build/abfdafad/v1/'></script>
+</div>
+	</div>
+</div>
+
+
+<div class="container pad50">
+<div class="download-box">
+<a name="downloader"></a>
+<h2 class="h-title">Download information</h2>
+	<ul class="info-dl" id="z">
+		<li><strong>Log info</strong></li>
+		<li>[2016-10-07 02:49:31] URL: http://youtube.com/watch?v=7XTHdcmjenI
+</li>
+		<li>[2016-10-07 02:49:31] IP Address: 45.76.68.102
+</li>
+		<li>[2016-10-07 02:49:31] User Agent: Python-urllib/3.5
+</li>
+		<li>[2016-10-07 02:49:31] Operating System: OS Unknown
+</li>
+		<li>[2016-10-07 02:49:31] Browser: Unknown 3.5
+</li>
+	</ul>
+
+	<!-- START KVH CODE -->
+<div id="kv2_outer" class="h" style="display:none;">
+    <div class="h-inner">
+        <textarea id="z" style="display:none;"></textarea><div id="kvhstat"></div>
+        <p class="mt35"><span id="instructs">Sorry, the <a href="/extensions">KeepVid Helper Userscript v0.2</a> is only compatible with <b>Google Chrome</b>, <b>Mozilla Firefox</b> and <b>Opera</b> browsers</span></p>        <div id="kv2_loading" style="display:none;"><center><div id="kvhdetected" style="display:none;">KeepVid Helper detected :)</div><br /><img src="/images/downloadbar/ajax-loader.gif" /></center></div>
+        <div id="kv2_inner" style="display:none;">
+            <div id="kv2_info" style="float:left;width:580px;"></div>
+            <div id="kv2_dl" style="clear:left;"></div>
+            <div id="kv2_error"></div>
+        </div>
+        <div class="smsg">
+            <br>You can now join <b>(Video Only)</b> and <b>(Audio Only)</b> streams with <a href="/programs">KeepVid Video Joiner</a>.<br>
+            <span class="red">*NEW*</span> <strong>Download video from10,000+</strong> video sites with <a href="https://pro.keepvid.com">KeepVid Pro</a>.        </div>
+    </div>
+    <ul class="info-dl" id="z3">
+        <li><strong>Log info</strong></li>
+        <li>[2016-10-07 02:49:31] URL: http://youtube.com/watch?v=7XTHdcmjenI
+</li>
+        <li>[2016-10-07 02:49:31] IP Address: 45.76.68.102
+</li>
+        <li>[2016-10-07 02:49:31] User Agent: Python-urllib/3.5
+</li>
+        <li>[2016-10-07 02:49:31] Operating System: OS Unknown
+</li>
+        <li>[2016-10-07 02:49:31] Browser: Unknown 3.5
+</li>
+    </ul>
+    <p class="mt35">
+        <span class="pr"><strong>Please report any issues to:</strong> <b><a href="mailto:contact@keepvid.com">contact@keepvid.com</a></b></span>
+    </p>
+</div>
+<script type="text/javascript">
+    try{
+        if(typeof kvh_ext !== 'undefined'){
+            document.getElementById("kvhinstructs").style.display="none";
+            document.getElementById("kvhdetected").style.display="block";
+            document.getElementById("kv2_loading").style.display="block";
+        }
+    }catch(ex){
+    }
+</script>
+<script type="text/javascript">
+    //kvh extension function
+    var kvh_url="http://youtube.com/watch?v=7XTHdcmjenI";
+
+    function kv2_ap(obj){
+        if(typeof kvh_ext !== 'undefined'){
+            //document.getElementById("kv2_loading").innerHTML='<center><img src=\"images/downloadbar/ajax-loader.gif\" class=\"ld\" />KeepVid Helper detected. Fetching links...<iframe src="http://keepvid.com/kvh.php" style="height:1px;width:1px;border:0;"></iframe></center>';
+            document.getElementById("kvh_obj").innerHTML = JSON.stringify(obj);
+
+            jaa[jaaid] = new Object();
+            jaa[jaaid].id = jaaid;
+            jaa[jaaid].dispose = obj.dispose;
+            jaa[jaaid].callback = obj.callback;
+            jaa[jaaid].it = setInterval((function(self){return function(){
+                if(document.getElementById("kvh_data").innerHTML!="~kv"){
+                    var xhr_resp = document.getElementById("kvh_data").innerHTML;
+                    //clean up xhr_resp
+                    xhr_resp = xhr_resp.replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&amp;/g,"&");
+                    self.response={body: xhr_resp}
+                    document.getElementById("kvh_data").innerHTML="~kv"; //ditch data
+                    clearInterval(self.it); //finally ditch this interval
+
+                    $("#kv2_loading").fadeOut("fast", function(){
+                        $("#dlsubmit").val("DOWNLOAD").css({"background":"#565656","border":"1px solid #565656"}).prop("disabled",false);
+                        //$("#kv2_error").html("");
+                        //$("#kv2_info").html("");
+                        //$("#kv2_dl").html("");
+                        $("#kv2_inner, #kv2_adside").fadeIn("fast");
+                    });
+
+                    self.callback(self.response);
+                }
+            }})(this.jaa[jaaid]),1);
+
+            jaaid++;
+        }
+    }
+
+
+    //display info function
+    function kv2_di(obj){
+        var output="";
+        var e=d.getElementById("kv2_info");
+        e.innerHTML="";
+        var nd=d.createElement("div");nd.setAttribute("class","j");nd.setAttribute("id","info");
+        try{obj.title=decodeURIComponent(escape(obj.title))}catch(e){try{obj.title=decodeURIComponent(unescape(obj.title))}catch(e){}}
+        if(obj.image!=undefined) output+='<a href="'+obj.url+'" target="_blank" rel="nofollow"><img src="'+obj.image+'" class="m" /></a>';
+        output+='<a href="'+obj.url+'" class="n" target="_blank" rel="nofollow">'+obj.title+'</a><br />';
+        output+='<span class="p">'+obj.domain;
+        if(obj.user!=undefined){
+            try{obj.user=decodeURIComponent(escape(obj.user))}catch(e){try{obj.user=decodeURIComponent(unescape(obj.user))}catch(e){}}
+            output+=' / '+obj.user;
+        }
+        output+='</span><br />';
+        if(obj.duration!=undefined) output+='<span class="q">'+obj.duration+'</span>';
+        output+='<br clear="both" /><br />';
+        nd.innerHTML=output;
+        e.appendChild(nd);
+    }
+    //display download link function
+    function kv2_dl(obj){
+        if(obj.title!=undefined) try{obj.title=decodeURIComponent(escape(obj.title))}catch(e){try{obj.title=decodeURIComponent(unescape(obj.title))}catch(e){}}
+        var output="";
+        var e=d.getElementById("kv2_dl");
+        var nd=d.createElement("div");
+        var cc="";
+        var colors={
+            "3GP": "2EADC9",
+            "FLV": "BF6D1B",
+            "MP4": "436DBA",
+            "WEBM": "52B27F",
+            "M4A": "87273A",
+            "MP3": "AF43B5",
+            "SRT": "B74B4B",
+            "F4V": "338F46"
+        };
+        if(colors[obj.type]!="") cc+=' style="color:#'+colors[obj.type]+';"';
+
+        if(obj.newtab==1) cc+=' target="_blank"';
+
+        if(obj.saveas==1 && obj.noref==1){
+            if(navigator.userAgent.match(/webkit/i)!=null) cc+=' rel="noreferrer"';
+            cc+=' onclick="return rd(this);"';
+        }else if(obj.saveas!=1 && obj.noref==1){
+            if(navigator.userAgent.match(/webkit/i)!=null) cc+=' rel="noreferrer"';
+            else cc+=' onclick="return rd(this);"';
+        }else if(obj.saveas==1){
+            cc+=' onclick="return rs(this,\''+escape(obj.title)+' '+obj.quality+'.'+obj.type.toLowerCase()+'\');"';
+        }
+
+        if(obj.saveas!=1 && obj.newtab!=1 && obj.title!=undefined && typeof(document.createElement('a')).download!=undefined) cc+=' download="'+obj.title+' '+obj.quality+'.'+obj.type.toLowerCase()+'"';
+
+        if(obj.fixedp==1) output+='<b style="color:#436DBA;">*FIXED*</b> ';
+        if(obj.newp==1) output+='<b style="color:#e01b3c;">*NEW*</b> ';
+
+        output+='<a';
+        if(obj.url!=undefined) output+=' href="'+obj.url+'"';
+        output+=' class="l"'+cc+'>&raquo; ';
+        output+='Download';
+        output+=' '+obj.type+' &laquo;</a>';
+
+        if(obj.quality!=undefined){
+            var tempqual = obj.quality;
+            output+=' - <b>'+tempqual+'</b>';
+        }
+        if(obj.more!=undefined) output+=' - '+obj.more+'';
+
+        if(!isNaN(obj.size) && obj.size!=null) output+='<span id="fs'+jaaid+'"> - '+(obj.size/1024/1024).toFixed(1).toString()+' MB</span>';
+        //if(obj.title!=undefined) output+='<button data-clipboard-text="'+obj.title+' '+obj.quality+'.'+obj.type.toLowerCase()+'">copy filename</button>';
+
+        if(obj.showsize==1 && document.cookie.match(/showsize=y/g)){
+            output+='<span id="fs'+jaaid+'"></span>';
+            dja({
+                params: {
+                    "u": obj.url,
+                    "method": "HEAD"
+                },
+                "dispose": 1,
+                "callback": function(da){
+                    var fs;
+                    try{
+                        fstemp = da.headers.match(/Content-Length: ([0-9]+)/g);
+                        fs = fstemp[fstemp.length-1].match(/Content-Length: ([0-9]+)/i)[1];
+                    }catch(e){
+                        fs=0;
+                    }
+                    d.getElementById('fs'+da.jaaid).innerHTML=" - "+(fs/1024/1024).toFixed(1).toString()+" MB";
+                }
+            });
+        }
+
+        nd.innerHTML=output;
+        e.appendChild(nd);
+    }
+    //function: convert seconds to 1:11 readable format
+    function duration(secs){
+        hours = parseInt(secs / 3600) % 24;
+        minutes = parseInt(secs / 60) % 60;
+        seconds = secs % 60;
+        return (hours < 1 ? "" : hours+":")+((minutes < 10 && hours > 0) ? "0" + minutes : minutes)+":"+(seconds < 10 ? "0" + seconds : seconds);
+    }
+
+    function kv2_display(data){
+        kv2_di(data.info);
+        for(key in data.download_links){
+            kv2_dl(data.download_links[key]);
+        }
+    }
+
+    function kv2_error(err){
+        $("#kv2_inner, #kv2_adside, #kv2_error").fadeIn("fast");
+        $("#kv2_error").html("<b>Error: </b>"+err);
+    }
+</script>
+<!-- KeepVid Helper Userscript -->
+<textarea id="kvh_obj" style="display:none;">~kv</textarea>
+<textarea id="kvh_data" style="display:none;">~kv</textarea>
+<script type="text/javascript">
+    try{
+        if(typeof kvh_ext !== 'undefined'){
+            log("KeepVid Helper detected...");
+            //document.getElementById("kvhstat").innerHTML='<iframe src="http://keepvid.com/kvh.php" style="height:1px;width:1px;border:0;"></iframe>';
+        }
+    }catch(ex){
+    }
+</script>
+<!-- END KVH CODE --><div class="h" id="kvorig">
+<div class="h-inner">
+<div id="applets"></div>
+<div id="nl"></div>
+<div id="dl">
+<p id="success_issues" class="mt35"><strong>Please report any issues to:</strong><b><a href="mailto:contact@keepvid.com">contact@keepvid.com</a></b></p>
+<div class="j pic-item" id="info"><div class="pic"><a href="http://www.youtube.com/watch?v=7XTHdcmjenI" target="_blank" rel="nofollow"><img width="120" height="90" src="http://i.ytimg.com/vi/7XTHdcmjenI/default.jpg" class="m" /></a></div><div class="text"><a href="http://www.youtube.com/watch?v=7XTHdcmjenI" class="n" target="_blank" rel="nofollow"><h3>What the Tech Industry Has Learned from Linus Torvalds: Jim Zemlin at TEDxConcordiaUPortland</h3></a><p class="p dd">youtube.com / TEDx Talks</p><p class="q dd">18:07</p></div><div class="clear"></div></div><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIXUgNDBYFDYQKZQOTbEd0B3nXTaO%2FchU7OyAw4Koalwh%2FbMuPB%2Fwe6mwyT%2Blhc6TFBgWFEUbfR1TIdNLDpiHE%2BlyPhROWSYfsRcGTNUxypHrra38hVZGys6oUzIPOSXrBRK7PmTx8rZeDr89PyhEuBplP59Mr3iK45ioX1W%2BXp5cW8cYI2CzxT3CBSmODrGInyQuD0vLgx%2FHJc2lexypXCfxsM0OsVsF85rAjYd2It0Q0e8YPUmlkktYuSmdMN9M9yOIgmPnCm9zQNimnfbavoyiK%2BbfvWXkAxbUP6oBGuzf%2BHFtvegQIf6FJKMzTeHtLMFUfpaJLiBKQun4TWC3Thw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Chinese (Simplified)</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhI8m7ochYTsKUDS9Ok%2F0A6qGm5ikiIqIrxcH3FN7nPPDZ%2BmyzQcKaUhN4XtjkFHzz%2F%2FNirUUXdk%2FIEGMMX5Y964U9gRWwrfmj3KahiJ8gZmjKMTN4KVktSV7BQhwfxUYhB4OUhpDSmsX2rbHAQw%2BVg%2F5HwaCZgeixk25EQMMqxmDUlOrXAPaqzKbr36hSTsWeUfFKqPOosedATdTGU3vgZSCrD0VHS1zZnKyFoyxOshog1EQZemLSts8kD8Q9%2B33IzC5oqWfX5tRhXXY6tnBuSega9O9Glbmy%2Ftq%2BdDKbL3yYn9l%2FdOnnxnayf6dlaDbLmmU9YwtaFQjmESDs8YzmTjw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>English (Automatic Captions)</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhI8m7ochYTsKUDS9Ok%2F0A6qGm5ikiIqIrxcH3FN7nPPDZ%2BmyzQcKaUhN4XtjkFHzz%2F%2FNirUUXdk%2FIEGMMX5Y964U9gRWwrfmj3KahiJ8gZmjKMTN4KVktSV7BQhwfxUYhB4OUhpDSmsX2rbHAQw%2BVg%2F5HwaCZgeixk25EQMMqxmDUlOrXAPaqzKbr36hSTsWeUfFKqPOosedATdTGU3vgZSCrD0VHS1zZnKyFoyxOshog1EQZemLSts8kD8Q9%2B33IzC5oqWfX5tRhXXY6tnBuSega9O9Glbmy%2Ftq%2BdDKbL3ybCdLqxsJ8DFhMHAGSsR%2BUkMXb%2F0jf3GdSdfT2qYjXgsw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>English</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhITxITr0a6qeiaIKEHtkz5ykc1UsKBQrXATgh6E4I%2BkOAj4h9I2jTjYRa6ewsIzTTgttenDi8p0%2BW9WHSu7h3GU3AkDzvGnLXk%2FTVpafhiXWRM9BqGl0RKlllx5ug2ggq%2FRoIA6M%2FLruK4o4qMOttbrB0nzX2%2B23MPQt0oi2U%2BnJiBz3%2FjuS0GMUejyxWck%2FShoKP%2BX3eu670UwZvAMgdQF3L8UNr9j8YIfu09JaVmYhowSts728h4kJaywkQSETmqL1B8OvsdNJA2bJpNDWZ%2FmPprQH0YkDv62mMGw97zEh5sm%2FbbMdxuI6BpWXg0fi9UKfKaA%2BGcx4lF1hEL97XyEQ%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Portuguese (Brazil)</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIIvjhEva3pyHd9Vfk0rzW4bj3iQq26fWzpBF7zpSIuPih2SAaEo1vljXJKdgJGseghXhSWjopc3lFlo7akKa%2B0k9gRWwrfmj3KahiJ8gZmjKMTN4KVktSV7BQhwfxUYhB4OUhpDSmsX2rbHAQw%2BVg%2F5HwaCZgeixk25EQMMqxmDUlOrXAPaqzKbr36hSTsWeUfFKqPOosedATdTGU3vgZSCrD0VHS1zZnKyFoyxOshog1EQZemLSts8kD8Q9%2B33IzC5oqWfX5tRhXXY6tnBuSega9O9Glbmy%2Ftq%2BdDKbL3ybCdLqxsJ8DFhMHAGSsR%2BUkMXb%2F0jf3GdSdfT2qYjXgsw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Spanish</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIIvjhEva3pyHd9Vfk0rzW4bj3iQq26fWzpBF7zpSIuPhSjTES1%2BYKXBV2JRVbN%2FW1DJwZSN5z8qT18O3nsPge%2B6fnKvBIl9mJGpH7Q0vpVblc1XRAvdQtfET08Gn7psXfdQEhgWkT7WTmdZZb3ul8gR%2BreReWMivS29BJtHFeCSClTjMnXupRoRq14zankSiF7qEwoxIN7XdMJOmkuWCHCiA2vN41tNZo01AMP4h%2FQFNUO%2BhV5pOxME5ZDcdKERujV6ZkQNFNiG%2FOg0nQfy8spPeI3%2FUoXJAnNwZJZ5AvnYgmzcQqukS6PcbZ9sgzQvJ6HtsBbdKZkmHm10t%2F7iEo%2Bg%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Spanish (Spain)</b><br /><br/>Or translate from <b>English (Automatic Captions)</b> to:<br/><div class="substrans"><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIaqdrWBOjFPBwZ3BMNp3vnCORrk0ZMXNX4j%2BLjLEmAafUcHVJCPliO4YqlzcADLOyKbL3JPQbl%2Baze32wYjaVG6fnKvBIl9mJGpH7Q0vpVblc1XRAvdQtfET08Gn7psXfdQEhgWkT7WTmdZZb3ul8gR%2BreReWMivS29BJtHFeCSClTjMnXupRoRq14zankSiF7qEwoxIN7XdMJOmkuWCHCiA2vN41tNZo01AMP4h%2FQFNUO%2BhV5pOxME5ZDcdKERujV6ZkQNFNiG%2FOg0nQfy8spPeI3%2FUoXJAnNwZJZ5AvnYiyHdkvSYJsyJ9gpiq6bqONw2W4O3Ggua8mKpdtAnYx8w%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Afrikaans</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIVOyTffAD3AHrepwsjBDkTgNA1FMTbk%2F4mSe%2FpAtcnAApON0b5LigELYNNqsWlLk3Z%2BemAJiqDz5Hoj8Nvv57wbLh9ytL7WhzjJGaufgN1jNM1vn4hUuYxQTHkb13yaIMj2PiWRFAVlnYQ70%2FKcCjnWge8ZheCljATQZxmzSpXSR6FvjsOWe7Md43ZYbfPE1WE5yQ%2FIYTrC41MU6Hzab36MlX%2FoJQLCcQBuQgDsmiUeEcwZ%2FNZvPWpO6Rj9GpGQ9q%2FdL8YtEDN21u7L%2B0T90mBaXlPq8R4kP%2F2InTnwOFsxZby7jqbpN07lLPA%2FW%2FX9sRdObpCh4zuEsEYzztXw1POw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Albanian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIAj%2F%2Bh1KwHVSmjlsC9ywn0t%2BOvkgwQ5oi%2BVxFreGtMvspJzy8iUZI7DnoxHDUblZ4N9qVsEsPwaBPxA599DLVLiSap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Amharic</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIhOAHjKw1%2BcAfuD08KGtxeMfc7SZ5kUwKUdTSeLWm9jiYllVgXIq94gcBUVOdx3AADwmCY7lyE3uYifKOGoULneRT4kBY%2FcJsmutX%2F3C%2FUpQq1%2Fd3GcHpj7i7BW9u%2BoxKsGmuvGbsw1lesfomUKO%2B4TjpIMvLF1IhAnoa4%2BgsvocxOxImrDXjAQiiJrmdrckHcXiToDY1BVXPXGGjcKvrgb5V0PM5A8q6In%2FNXbQFDENJrubZV%2BhxG6KlCaKO6P4wT1i3k9HQ3wwKOcROwukWYF9trUVGQTnOs5R3BvlEDYrNUVbvnPYEmcUTQn6AJmE7qiP%2FQJml3Q9WmRF%2B%2FfgXFQ%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Arabic</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIhOAHjKw1%2BcAfuD08KGtxeMfc7SZ5kUwKUdTSeLWm9jhpzFFJOoGznpJQw5byPmxa4%2BFfmEKa1TYECVGKAQ7uGLLh9ytL7WhzjJGaufgN1jNM1vn4hUuYxQTHkb13yaIMj2PiWRFAVlnYQ70%2FKcCjnWge8ZheCljATQZxmzSpXSR6FvjsOWe7Md43ZYbfPE1WE5yQ%2FIYTrC41MU6Hzab36MlX%2FoJQLCcQBuQgDsmiUeEcwZ%2FNZvPWpO6Rj9GpGQ9q%2FdL8YtEDN21u7L%2B0T90mBaXlPq8R4kP%2F2InTnwOFsxZby7jqbpN07lLPA%2FW%2FX9sRdObpCh4zuEsEYzztXw1POw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Armenian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhITFHOdxG%2BiaApXcllOFbn9cMmtv%2BdoUPmY%2FCc9OZUdVceb2ouOahcllDE17avfYg6mwIH95e4nAaNGOYvpiwuRYepH%2FsZ2MDAdv68eN1MR5erYRyx%2B3MCBYuqEp0cCNGmZ4XIUPRouADJKrGuKggs7ijxuiLA1kBnIgFc0zjaB4qRYV3Tu7cTTgcr6D2Z4%2BVUFtocINv9gRVQWPgO%2Bwp81zs9oif9kI4QVC047FbYjeXflwf38Hmrj27E9xpTUB82pQiu%2BDUmZD1LdSzz2MtZVB9kcLFVDgs5A4JnL0FqnfG5n0XDnEwxuQgWStW0YJKXjKkGlLax8cp0YxijMNvf5w%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Azerbaijani</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIBqVPL81thqE9q6g5qN00%2F4XLzfi3S0RcbelAAGBCtYlGBlPurtdKHT7v8sLeqGfjIh%2FcsChV%2FQNI2BiXIoyia%2BRT4kBY%2FcJsmutX%2F3C%2FUpQq1%2Fd3GcHpj7i7BW9u%2BoxKsGmuvGbsw1lesfomUKO%2B4TjpIMvLF1IhAnoa4%2BgsvocxOxImrDXjAQiiJrmdrckHcXiToDY1BVXPXGGjcKvrgb5V0PM5A8q6In%2FNXbQFDENJrubZV%2BhxG6KlCaKO6P4wT1i3k9HQ3wwKOcROwukWYF9trUVGQTnOs5R3BvlEDYrNUVbvnPYEmcUTQn6AJmE7qiP%2FQJml3Q9WmRF%2B%2FfgXFQ%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Basque</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIJwdw8W7RVszDE69hH5vfCg9BkI%2Ff4SLqHvy9DCC39qbxbD7qEnNXv4cJkhrxyU5DnN4WUEdJjwqWs7shG1A2GpC%2BVHQs0rK69o4xbqaeomFbcEnn%2FlZVIS8Ht3grfTInD5fBtt514IKN6%2B8s5UJCyIICXiTZfNu8JtX9uFLI%2FgY2pKLpAC5pMdklPXt02t5tnq77Pf8LUYhw2bWkS3TnJ9NCJU7GrJNcQrXlt%2BhY5%2FqVsk8id1juoaFccZ9TxDRSTuJldmPtcsGOXqT%2Fuc9lpjGnXrjkZ2ZGx3RPtycDIqyViypNarwS0e0YRPaNWXLUByitwa%2FYHxeS9Lm8U3Vn7A%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Belarusian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIJwdw8W7RVszDE69hH5vfCg9BkI%2Ff4SLqHvy9DCC39qbOFr2rxLbTTWLj8lC8MuB1%2F32%2F1hEAa1uX5q5%2FJcBQpySap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Bengali</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIvulThmKiij3WTfU1G2cyTaa5fdcwGCqRp7JwOe2j2QA3QnhxpXOBUwWz%2BkLdqmXPDpglhhH9ZvplI1BGZ%2BlDgSSap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Bosnian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhI0vcDrU02fUysasupMNijZ9kc9E2C0Z6MCidOUZhwqLO7pMLVuVg69%2FmIEc2u8mwJkz3TheoDGfIb%2F%2BM6QoGRxafnKvBIl9mJGpH7Q0vpVblc1XRAvdQtfET08Gn7psXfdQEhgWkT7WTmdZZb3ul8gR%2BreReWMivS29BJtHFeCSClTjMnXupRoRq14zankSiF7qEwoxIN7XdMJOmkuWCHCiA2vN41tNZo01AMP4h%2FQFNUO%2BhV5pOxME5ZDcdKERujV6ZkQNFNiG%2FOg0nQfy8spPeI3%2FUoXJAnNwZJZ5AvnYiyHdkvSYJsyJ9gpiq6bqONw2W4O3Ggua8mKpdtAnYx8w%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Bulgarian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhI0vcDrU02fUysasupMNijZ9kc9E2C0Z6MCidOUZhwqLNuV8fHQKAtHP4tmesWB3fq4wCmgAIqv%2Bz82d7PVvRC4CSap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Burmese</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhInxSYkKEZBT5ggA4PmRMo0lZLKPo8tD4vp6TXu9eNdsCX9T6IdwTcPlggS%2FtbIY%2FOwZ9VvgpfX%2Ff9oMYPh0wZ0iSap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Catalan</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIXedfOeGKezTZWikylsgFCXY4Dg%2BmgDfTr8GALOUfZILkLb10%2F6BdZk4TH4qDpv2cel42Krl0bKDL8ZCoN5R6LbLh9ytL7WhzjJGaufgN1jNM1vn4hUuYxQTHkb13yaIMj2PiWRFAVlnYQ70%2FKcCjnWge8ZheCljATQZxmzSpXSR6FvjsOWe7Md43ZYbfPE1WE5yQ%2FIYTrC41MU6Hzab36MlX%2FoJQLCcQBuQgDsmiUeEcwZ%2FNZvPWpO6Rj9GpGQ9q%2FdL8YtEDN21u7L%2B0T90mBaXlPq8R4kP%2F2InTnwOFsxZby7jqbpN07lLPA%2FW%2FX9sRdObpCh4zuEsEYzztXw1POw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Cebuano</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIXUgNDBYFDYQKZQOTbEd0B3nXTaO%2FchU7OyAw4KoalwjBMvUYgU3dKhkQJF9rk4e3ByT2iJvBMaXp1cDBw%2Bt5b6gsZCQDk2vttBccKGzhBU41O9HDn%2B3OsMZXkbkAJyvSDgJEbDqu2ZBTObQQR7EMWODcbIAcge6%2BgITCwXvTImtwHSrIlBCy6tfNsEpRXGHyqFNJCTZeBucBEDri1%2B291qHtT0KTlY2PZJpx2anKJ0QT%2FYcGbIBPOBYQr6u5JpfmRGplwA7i86C5aNaR3%2FneUjFX%2Fvnnv6%2BIdG%2FwE5sEjXYi6W8y%2FLNVZYcBpiR9CPqv%2BSUqGXxyMMieMQRJr3KNNKrwbtyk6r6K3W8z5wXf170P9XbvmXoVclS8aw%2BDKWXV" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Chinese (Simplified)</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIXUgNDBYFDYQKZQOTbEd0B3nXTaO%2FchU7OyAw4Koalwh7RSP4sbNHuaSl%2BiW8c25DDiMug65bQO2jyefN0Z0gk5JOIacJ7ZDqGoBfLrRlZcmEmERr2KcdkyC8Gd9RxvO4iPEcc%2Fxf2PwK7fFI2rxQurhixQBiNtSA1hXFCKYdgvsZhfRxrFvalRB%2Bu%2Fywgc3Jc1a1Jp%2FgV81efTsapbhB7aQtR936sNZQkHl9wfG5gqCo5gpoGkxkHRUmlq%2Bp7E40aj7HbIvkG1EuA8VfpUTKP7OLJMtR00qZpJeYnnA2qE9VaFMgWmVNE8M2AuHLlmQ04%2B6iySdDq1Op2PIqN0TYvzOKgjYxDyvheFDCOANqcnm2HvCJC7OQjROUeYAaxMn8" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Chinese (Traditional)</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhICu0Q7lN87vWpyTwETre4bHueUssFDrOfKrLCdjnZzqmOhvr09wos0Hy4TH%2FhhCvQ2yip7SzZhOMtCDgLf%2FtO3rLh9ytL7WhzjJGaufgN1jNM1vn4hUuYxQTHkb13yaIMj2PiWRFAVlnYQ70%2FKcCjnWge8ZheCljATQZxmzSpXSR6FvjsOWe7Md43ZYbfPE1WE5yQ%2FIYTrC41MU6Hzab36MlX%2FoJQLCcQBuQgDsmiUeEcwZ%2FNZvPWpO6Rj9GpGQ9q%2FdL8YtEDN21u7L%2B0T90mBaXlPq8R4kP%2F2InTnwOFsxZby7jqbpN07lLPA%2FW%2FX9sRdObpCh4zuEsEYzztXw1POw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Corsican</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhI31Qvj%2BBUqBJ%2FQRdRPHXdeFXn7lhbm6XhxBY9qEWg7C1VXxAxkj0XqY9GdiM4lLNyjsMrZ%2BQA8iEg8GDCN3I8QrLh9ytL7WhzjJGaufgN1jNM1vn4hUuYxQTHkb13yaIMj2PiWRFAVlnYQ70%2FKcCjnWge8ZheCljATQZxmzSpXSR6FvjsOWe7Md43ZYbfPE1WE5yQ%2FIYTrC41MU6Hzab36MlX%2FoJQLCcQBuQgDsmiUeEcwZ%2FNZvPWpO6Rj9GpGQ9q%2FdL8YtEDN21u7L%2B0T90mBaXlPq8R4kP%2F2InTnwOFsxZby7jqbpN07lLPA%2FW%2FX9sRdObpCh4zuEsEYzztXw1POw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Croatian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIpCTAvnLUkY%2F6uwxLR7i0diLLPYwjfsBrxB%2F%2FDCQy7AmIPCuljqwLOOJeDmStoFkYfvQH2rcQj9F%2FB4I6e1htn9xJ4CWK4FmlaFH6BpbSWyJ7aD%2BMKyeX9IxMq3Ee3xNHm80gf6QzM2DyqtdbSuiD9uXgG9UcigtRenaQm4Xg1hjS%2FtBh%2FM1E5iOhEWEYYkIP8Ptd8RhUhlRrd%2FGf1OJuj5QOVzgkqswjqmaRqHiv9n33KYreXzsWTitoY4j8P5dH93zqbErNczt3G9fynuLzThdFgMGqmZeTPVxPKM27sdp7hpTDgQQ3%2B3swwryT11OSN1ddF4y5mrRGAVo0hhMwpw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Czech</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIXIaKZ%2B7wdq5j4iTFOIp1X%2B5HXUMGTP9s6usZRWXm8RYk%2B%2FSJ2VAT%2FPQHEVoGJCpaQhmGkzy2nDanMcr8xjTKz%2BRT4kBY%2FcJsmutX%2F3C%2FUpQq1%2Fd3GcHpj7i7BW9u%2BoxKsGmuvGbsw1lesfomUKO%2B4TjpIMvLF1IhAnoa4%2BgsvocxOxImrDXjAQiiJrmdrckHcXiToDY1BVXPXGGjcKvrgb5V0PM5A8q6In%2FNXbQFDENJrubZV%2BhxG6KlCaKO6P4wT1i3k9HQ3wwKOcROwukWYF9trUVGQTnOs5R3BvlEDYrNUVbvnPYEmcUTQn6AJmE7qiP%2FQJml3Q9WmRF%2B%2FfgXFQ%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Danish</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIoXqCug%2FxjtITwOnkSEJaPTdIycHsOmnWxxwiN%2FfNpfjaaRAkJgjcsactbtVSmGUtbethyrcGbdKg%2FJgyJm%2B5S9xJ4CWK4FmlaFH6BpbSWyJ7aD%2BMKyeX9IxMq3Ee3xNHm80gf6QzM2DyqtdbSuiD9uXgG9UcigtRenaQm4Xg1hjS%2FtBh%2FM1E5iOhEWEYYkIP8Ptd8RhUhlRrd%2FGf1OJuj5QOVzgkqswjqmaRqHiv9n33KYreXzsWTitoY4j8P5dH93zqbErNczt3G9fynuLzThdFgMGqmZeTPVxPKM27sdp7hpTDgQQ3%2B3swwryT11OSN1ddF4y5mrRGAVo0hhMwpw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Dutch</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhI8m7ochYTsKUDS9Ok%2F0A6qGm5ikiIqIrxcH3FN7nPPDZpzlhkMvQTcnhlLvou4MrAGnbZPE%2BzXMyAfopn7%2FtQniSap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>English</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIz7IYqxFujnQ6dRYMdp0Epmuz3yJFpaysqYptU%2BLv7T4c4VTgFfIh4fGvWedGjgyYJVGmDIbVp8pCr8PVoXsnyafnKvBIl9mJGpH7Q0vpVblc1XRAvdQtfET08Gn7psXfdQEhgWkT7WTmdZZb3ul8gR%2BreReWMivS29BJtHFeCSClTjMnXupRoRq14zankSiF7qEwoxIN7XdMJOmkuWCHCiA2vN41tNZo01AMP4h%2FQFNUO%2BhV5pOxME5ZDcdKERujV6ZkQNFNiG%2FOg0nQfy8spPeI3%2FUoXJAnNwZJZ5AvnYiyHdkvSYJsyJ9gpiq6bqONw2W4O3Ggua8mKpdtAnYx8w%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Esperanto</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIz7IYqxFujnQ6dRYMdp0Epmuz3yJFpaysqYptU%2BLv7T4VgxVC4%2BtCN%2BEYGXkms6KG5iyeemFtnE2i9LIOLJAWcbLh9ytL7WhzjJGaufgN1jNM1vn4hUuYxQTHkb13yaIMj2PiWRFAVlnYQ70%2FKcCjnWge8ZheCljATQZxmzSpXSR6FvjsOWe7Md43ZYbfPE1WE5yQ%2FIYTrC41MU6Hzab36MlX%2FoJQLCcQBuQgDsmiUeEcwZ%2FNZvPWpO6Rj9GpGQ9q%2FdL8YtEDN21u7L%2B0T90mBaXlPq8R4kP%2F2InTnwOFsxZby7jqbpN07lLPA%2FW%2FX9sRdObpCh4zuEsEYzztXw1POw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Estonian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIse4S6%2F4KSXOtjOig9N5QmgoBmOab5HzwlUWflxXBijsA5JW4hQ3ZQp7kJ77agDG3G7o%2BXYmdzdPbYyAt2Y0e%2BKfnKvBIl9mJGpH7Q0vpVblc1XRAvdQtfET08Gn7psXfdQEhgWkT7WTmdZZb3ul8gR%2BreReWMivS29BJtHFeCSClTjMnXupRoRq14zankSiF7qEwoxIN7XdMJOmkuWCHCiA2vN41tNZo01AMP4h%2FQFNUO%2BhV5pOxME5ZDcdKERujV6ZkQNFNiG%2FOg0nQfy8spPeI3%2FUoXJAnNwZJZ5AvnYiyHdkvSYJsyJ9gpiq6bqONw2W4O3Ggua8mKpdtAnYx8w%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Filipino</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIse4S6%2F4KSXOtjOig9N5QmgoBmOab5HzwlUWflxXBijuy%2BTrI%2BjSIGDg6OT6pYD9LgVJxW6wLxfWzLpvoL%2FrArySap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Finnish</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIH7rPpImcQnR5FpYtarcQfrT9GGqohiNw7Z5Z8YTeUnmAR1UaMtzSrbZj7DsAUH7JwV9bZZoc%2Fwe%2BpFZcxY5YBeRT4kBY%2FcJsmutX%2F3C%2FUpQq1%2Fd3GcHpj7i7BW9u%2BoxKsGmuvGbsw1lesfomUKO%2B4TjpIMvLF1IhAnoa4%2BgsvocxOxImrDXjAQiiJrmdrckHcXiToDY1BVXPXGGjcKvrgb5V0PM5A8q6In%2FNXbQFDENJrubZV%2BhxG6KlCaKO6P4wT1i3k9HQ3wwKOcROwukWYF9trUVGQTnOs5R3BvlEDYrNUVbvnPYEmcUTQn6AJmE7qiP%2FQJml3Q9WmRF%2B%2FfgXFQ%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>French</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIGD3l46S3E%2FRR54LJOPRalc6mIXxu3wlnmDnp3f5PTVjRNXQZ3lYwSNFf5peYkXe25fXj%2FVTAmQ10AeQ2gLWgMbLh9ytL7WhzjJGaufgN1jNM1vn4hUuYxQTHkb13yaIMj2PiWRFAVlnYQ70%2FKcCjnWge8ZheCljATQZxmzSpXSR6FvjsOWe7Md43ZYbfPE1WE5yQ%2FIYTrC41MU6Hzab36MlX%2FoJQLCcQBuQgDsmiUeEcwZ%2FNZvPWpO6Rj9GpGQ9q%2FdL8YtEDN21u7L%2B0T90mBaXlPq8R4kP%2F2InTnwOFsxZby7jqbpN07lLPA%2FW%2FX9sRdObpCh4zuEsEYzztXw1POw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Galician</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIU7wEs%2BY4GN9FmqsnbI%2B1StesfSsbcBKxmvfgsOmGn9qSHib%2BsjHOQns9vm%2F2RYq1irAsqf%2F0htxgwCR6I%2FvfzbLh9ytL7WhzjJGaufgN1jNM1vn4hUuYxQTHkb13yaIMj2PiWRFAVlnYQ70%2FKcCjnWge8ZheCljATQZxmzSpXSR6FvjsOWe7Md43ZYbfPE1WE5yQ%2FIYTrC41MU6Hzab36MlX%2FoJQLCcQBuQgDsmiUeEcwZ%2FNZvPWpO6Rj9GpGQ9q%2FdL8YtEDN21u7L%2B0T90mBaXlPq8R4kP%2F2InTnwOFsxZby7jqbpN07lLPA%2FW%2FX9sRdObpCh4zuEsEYzztXw1POw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Georgian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIU7wEs%2BY4GN9FmqsnbI%2B1StesfSsbcBKxmvfgsOmGn9pfzC7mtyxgZvBBReyUFKxk3PXNpWq8SEC1ypgW4owH%2F%2BRT4kBY%2FcJsmutX%2F3C%2FUpQq1%2Fd3GcHpj7i7BW9u%2BoxKsGmuvGbsw1lesfomUKO%2B4TjpIMvLF1IhAnoa4%2BgsvocxOxImrDXjAQiiJrmdrckHcXiToDY1BVXPXGGjcKvrgb5V0PM5A8q6In%2FNXbQFDENJrubZV%2BhxG6KlCaKO6P4wT1i3k9HQ3wwKOcROwukWYF9trUVGQTnOs5R3BvlEDYrNUVbvnPYEmcUTQn6AJmE7qiP%2FQJml3Q9WmRF%2B%2FfgXFQ%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>German</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIYzt2GK1f9PWDRM2ikM9FX3V0H2whlWGcu6RGN3TMQ96pBp50RFfX8s6Tc88CxsPZ5kwMcW8XMuGeC9k%2FSqZfj9xJ4CWK4FmlaFH6BpbSWyJ7aD%2BMKyeX9IxMq3Ee3xNHm80gf6QzM2DyqtdbSuiD9uXgG9UcigtRenaQm4Xg1hjS%2FtBh%2FM1E5iOhEWEYYkIP8Ptd8RhUhlRrd%2FGf1OJuj5QOVzgkqswjqmaRqHiv9n33KYreXzsWTitoY4j8P5dH93zqbErNczt3G9fynuLzThdFgMGqmZeTPVxPKM27sdp7hpTDgQQ3%2B3swwryT11OSN1ddF4y5mrRGAVo0hhMwpw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Greek</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIJwmWVUnPYkkzh7e0kOMcU99jBRChI1ak4Rdlq2t5XY5Wr8aljEBzs0B%2Bd1pwGnkXUSAmm5BEfJw1RpDFx%2BgIt7Lh9ytL7WhzjJGaufgN1jNM1vn4hUuYxQTHkb13yaIMj2PiWRFAVlnYQ70%2FKcCjnWge8ZheCljATQZxmzSpXSR6FvjsOWe7Md43ZYbfPE1WE5yQ%2FIYTrC41MU6Hzab36MlX%2FoJQLCcQBuQgDsmiUeEcwZ%2FNZvPWpO6Rj9GpGQ9q%2FdL8YtEDN21u7L%2B0T90mBaXlPq8R4kP%2F2InTnwOFsxZby7jqbpN07lLPA%2FW%2FX9sRdObpCh4zuEsEYzztXw1POw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Gujarati</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhItO0%2BDOw%2B3E5ELM9EOi6C5kmWYG0Tn2ewAXGAI2HfsaptynY%2B4XWqlvhgi8YkPKkb8rYSivjil1GJx%2FSdzk%2Bft1yVVTXJaJtrBaxzMIR273Fy1AgeOBgivgA2my6DoSTxRK7PmTx8rZeDr89PyhEuBplP59Mr3iK45ioX1W%2BXp5cW8cYI2CzxT3CBSmODrGInyQuD0vLgx%2FHJc2lexypXCfxsM0OsVsF85rAjYd2It0Q0e8YPUmlkktYuSmdMN9M9yOIgmPnCm9zQNimnfbavoyiK%2BbfvWXkAxbUP6oBGuzfkeqjnsP8Sgxjx%2BsIS2VgoRPPgZG%2B%2FGSYB7a8ePmOzMd0AYHjnlAon%2B%2B9Clj8GJmxw5u5gxpv8o4LIGgaH9tg9" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Haitian Creole</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhItO0%2BDOw%2B3E5ELM9EOi6C5kmWYG0Tn2ewAXGAI2HfsarQna30WiTgmMnBHPNBArpFPE1XcDlbX9gZ%2F2Kej9FoHtxJ4CWK4FmlaFH6BpbSWyJ7aD%2BMKyeX9IxMq3Ee3xNHm80gf6QzM2DyqtdbSuiD9uXgG9UcigtRenaQm4Xg1hjS%2FtBh%2FM1E5iOhEWEYYkIP8Ptd8RhUhlRrd%2FGf1OJuj5QOVzgkqswjqmaRqHiv9n33KYreXzsWTitoY4j8P5dH93zqbErNczt3G9fynuLzThdFgMGqmZeTPVxPKM27sdp7hpTDgQQ3%2B3swwryT11OSN1ddF4y5mrRGAVo0hhMwpw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Hausa</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhItO0%2BDOw%2B3E5ELM9EOi6C5kmWYG0Tn2ewAXGAI2Hfsap7fOsmaqa13nf%2FXID1aWHSrzr25o%2FBupDczd17E3BHAafnKvBIl9mJGpH7Q0vpVblc1XRAvdQtfET08Gn7psXfdQEhgWkT7WTmdZZb3ul8gR%2BreReWMivS29BJtHFeCSClTjMnXupRoRq14zankSiF7qEwoxIN7XdMJOmkuWCHCiA2vN41tNZo01AMP4h%2FQFNUO%2BhV5pOxME5ZDcdKERujV6ZkQNFNiG%2FOg0nQfy8spPeI3%2FUoXJAnNwZJZ5AvnYiyHdkvSYJsyJ9gpiq6bqONw2W4O3Ggua8mKpdtAnYx8w%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Hawaiian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIwDzaqJbDizcXun9gfq5B0bzLGXilkB9XM52MX6DxV%2Fy80iYc5c%2FkwksBtdNfJH3iPP%2Fcv0%2Bk4fRGvZQ1bndDPeRT4kBY%2FcJsmutX%2F3C%2FUpQq1%2Fd3GcHpj7i7BW9u%2BoxKsGmuvGbsw1lesfomUKO%2B4TjpIMvLF1IhAnoa4%2BgsvocxOxImrDXjAQiiJrmdrckHcXiToDY1BVXPXGGjcKvrgb5V0PM5A8q6In%2FNXbQFDENJrubZV%2BhxG6KlCaKO6P4wT1i3k9HQ3wwKOcROwukWYF9trUVGQTnOs5R3BvlEDYrNUVbvnPYEmcUTQn6AJmE7qiP%2FQJml3Q9WmRF%2B%2FfgXFQ%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Hebrew</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhI4wsGTonS%2F6fhjF1f9v5cl5CBQOTxmtJ%2BHxdBEzdsdAHKbLnMhhwikl4isWOEuVAtwZd3NmC%2Ffu6fPDRGL0gagdxJ4CWK4FmlaFH6BpbSWyJ7aD%2BMKyeX9IxMq3Ee3xNHm80gf6QzM2DyqtdbSuiD9uXgG9UcigtRenaQm4Xg1hjS%2FtBh%2FM1E5iOhEWEYYkIP8Ptd8RhUhlRrd%2FGf1OJuj5QOVzgkqswjqmaRqHiv9n33KYreXzsWTitoY4j8P5dH93zqbErNczt3G9fynuLzThdFgMGqmZeTPVxPKM27sdp7hpTDgQQ3%2B3swwryT11OSN1ddF4y5mrRGAVo0hhMwpw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Hindi</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhI4QDEFZ8Fkticil1qftPS%2B5E3B%2B73gNZt3VVj%2BbL0wZnZi2Qn9rMnJEq3MZDp26TDTcYgwbKB0UNSZQvC44qpnORT4kBY%2FcJsmutX%2F3C%2FUpQq1%2Fd3GcHpj7i7BW9u%2BoxKsGmuvGbsw1lesfomUKO%2B4TjpIMvLF1IhAnoa4%2BgsvocxOxImrDXjAQiiJrmdrckHcXiToDY1BVXPXGGjcKvrgb5V0PM5A8q6In%2FNXbQFDENJrubZV%2BhxG6KlCaKO6P4wT1i3k9HQ3wwKOcROwukWYF9trUVGQTnOs5R3BvlEDYrNUVbvnPYEmcUTQn6AJmE7qiP%2FQJml3Q9WmRF%2B%2FfgXFQ%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Hmong</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhI%2FVCQSUgHHEuf63MxDGVQLRam1woOjIZBDrBODGYRCJCoaVeEIXnqiyyjRejBtPpM8Yx9pleEWpW0VAx1tUkeN6fnKvBIl9mJGpH7Q0vpVblc1XRAvdQtfET08Gn7psXfdQEhgWkT7WTmdZZb3ul8gR%2BreReWMivS29BJtHFeCSClTjMnXupRoRq14zankSiF7qEwoxIN7XdMJOmkuWCHCiA2vN41tNZo01AMP4h%2FQFNUO%2BhV5pOxME5ZDcdKERujV6ZkQNFNiG%2FOg0nQfy8spPeI3%2FUoXJAnNwZJZ5AvnYiyHdkvSYJsyJ9gpiq6bqONw2W4O3Ggua8mKpdtAnYx8w%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Hungarian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhI69cYjfNkLge%2FjhGPYSBgV2UOroEKzsklOvqVAX8FRdt9qk0Fur5TR3cjxj90LaRog6O4qCMIJxoN2G94nmJMLqfnKvBIl9mJGpH7Q0vpVblc1XRAvdQtfET08Gn7psXfdQEhgWkT7WTmdZZb3ul8gR%2BreReWMivS29BJtHFeCSClTjMnXupRoRq14zankSiF7qEwoxIN7XdMJOmkuWCHCiA2vN41tNZo01AMP4h%2FQFNUO%2BhV5pOxME5ZDcdKERujV6ZkQNFNiG%2FOg0nQfy8spPeI3%2FUoXJAnNwZJZ5AvnYiyHdkvSYJsyJ9gpiq6bqONw2W4O3Ggua8mKpdtAnYx8w%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Icelandic</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIOQeQZNQHXv3V2Vqvq91IHyuHuqkQe1fgoPlBFIVLQMAfxKbeTJ9XhNWzixqVsApmRvw6O6iL1z8H67l2%2BSMX9dcl6yDx11dMuHJFFbLb%2FQh95sQRLecTfZtU7fReBThP4KBLNy39eP%2Fwh%2BYbBTaQMYviw2cp1cWVM5cZbNl%2FoUTsOR8ItWnL%2Fo%2BpJXPTR9npGnTUKsCZuOVnb8uIagAU%2Bvp3FbCeWMd%2FScRXO5CJlMoskvO633sZx70MRuTO7loaidM21mjaUoIp%2BsB0Lc6OnZGjEV4HLMZTj1%2FrsbGx%2F3H4OXG6cbvr5KEsJ8%2FTWx2RWBD8bDcZAWCtCWWFxE7n0A%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Igbo</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIdSaVlGtQgBUg7w9A%2FLDp8Pwe%2BjBREO5x0Vi%2BcatLvP3SEXXYeWiiKBrDfN3J2ZwMdqy1xRAxHllAdTEdPgrqUK5MYZdhEVgi4vVWlO%2FJmjlNPzTZSMaV87KzPC9tplOwD5fBtt514IKN6%2B8s5UJCyIICXiTZfNu8JtX9uFLI%2FgY2pKLpAC5pMdklPXt02t5tnq77Pf8LUYhw2bWkS3TnJ9NCJU7GrJNcQrXlt%2BhY5%2FqVsk8id1juoaFccZ9TxDRSTuJldmPtcsGOXqT%2Fuc9lpjGnXrjkZ2ZGx3RPtycDIqyViypNarwS0e0YRPaNWXLUByitwa%2FYHxeS9Lm8U3Vn7A%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Indonesian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhId2qg40AYUbhBmsIaQe5HXBGIkerCn6Q8vAc0UDm186HbQ1QfCvxZBfvCnLJygz5hr6OgWwWF1rOPAbSviuIXodxJ4CWK4FmlaFH6BpbSWyJ7aD%2BMKyeX9IxMq3Ee3xNHm80gf6QzM2DyqtdbSuiD9uXgG9UcigtRenaQm4Xg1hjS%2FtBh%2FM1E5iOhEWEYYkIP8Ptd8RhUhlRrd%2FGf1OJuj5QOVzgkqswjqmaRqHiv9n33KYreXzsWTitoY4j8P5dH93zqbErNczt3G9fynuLzThdFgMGqmZeTPVxPKM27sdp7hpTDgQQ3%2B3swwryT11OSN1ddF4y5mrRGAVo0hhMwpw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Irish</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIG5uTnYRNHPr4FZuOMhfxmvyOuzEJ9w0BK3hyCy2ZLc0HZ3ZVJrvddNGrZJUHUZdQcCP5G7xkEXwIKEV6L1JFPSSap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Italian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIl8FNP36zr0Qn3ZU8sp%2Bu46AAwmePEIcLPCpagrjL3fAj4C3%2BeAMCn%2FXya1jTB5moBWYJQeU6pRXoVdD9PJZ%2BqrLh9ytL7WhzjJGaufgN1jNM1vn4hUuYxQTHkb13yaIMj2PiWRFAVlnYQ70%2FKcCjnWge8ZheCljATQZxmzSpXSR6FvjsOWe7Md43ZYbfPE1WE5yQ%2FIYTrC41MU6Hzab36MlX%2FoJQLCcQBuQgDsmiUeEcwZ%2FNZvPWpO6Rj9GpGQ9q%2FdL8YtEDN21u7L%2B0T90mBaXlPq8R4kP%2F2InTnwOFsxZby7jqbpN07lLPA%2FW%2FX9sRdObpCh4zuEsEYzztXw1POw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Japanese</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIl8FNP36zr0Qn3ZU8sp%2Bu46AAwmePEIcLPCpagrjL3fD6HDX1xi%2BqSwbtlp9g2X0wIYNwI3Ip02YQYUPdcr8mIbLh9ytL7WhzjJGaufgN1jNM1vn4hUuYxQTHkb13yaIMj2PiWRFAVlnYQ70%2FKcCjnWge8ZheCljATQZxmzSpXSR6FvjsOWe7Md43ZYbfPE1WE5yQ%2FIYTrC41MU6Hzab36MlX%2FoJQLCcQBuQgDsmiUeEcwZ%2FNZvPWpO6Rj9GpGQ9q%2FdL8YtEDN21u7L%2B0T90mBaXlPq8R4kP%2F2InTnwOFsxZby7jqbpN07lLPA%2FW%2FX9sRdObpCh4zuEsEYzztXw1POw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Javanese</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIisFMxS3iVH23zW6qYJHloWKKkA4%2B3NvK9JOXGdY9VdRzzTbJwBUC5oR7NfoS2lXdnKPBtQzRfYZKkwoq8dXW1CSap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Kannada</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIisFMxS3iVH23zW6qYJHloWKKkA4%2B3NvK9JOXGdY9VdTtkh4aysbgl%2B7pnPmJNRKSoZ33e9CH6YxFkgxW6FDjgORT4kBY%2FcJsmutX%2F3C%2FUpQq1%2Fd3GcHpj7i7BW9u%2BoxKsGmuvGbsw1lesfomUKO%2B4TjpIMvLF1IhAnoa4%2BgsvocxOxImrDXjAQiiJrmdrckHcXiToDY1BVXPXGGjcKvrgb5V0PM5A8q6In%2FNXbQFDENJrubZV%2BhxG6KlCaKO6P4wT1i3k9HQ3wwKOcROwukWYF9trUVGQTnOs5R3BvlEDYrNUVbvnPYEmcUTQn6AJmE7qiP%2FQJml3Q9WmRF%2B%2FfgXFQ%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Kazakh</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhISUHqKGE7y5hZKrI%2BKHq%2BI9ynLyquRPzhgFrbNrd36VWnqeYPhzwESipVFXUCqWJtXECCouIKuiS1EgS%2BU%2BGlUNxJ4CWK4FmlaFH6BpbSWyJ7aD%2BMKyeX9IxMq3Ee3xNHm80gf6QzM2DyqtdbSuiD9uXgG9UcigtRenaQm4Xg1hjS%2FtBh%2FM1E5iOhEWEYYkIP8Ptd8RhUhlRrd%2FGf1OJuj5QOVzgkqswjqmaRqHiv9n33KYreXzsWTitoY4j8P5dH93zqbErNczt3G9fynuLzThdFgMGqmZeTPVxPKM27sdp7hpTDgQQ3%2B3swwryT11OSN1ddF4y5mrRGAVo0hhMwpw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Khmer</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIxcTYoLLKjp1EkU4mqGo9rlKDgMtGIPSy%2FGyZaTI9L7TXcujpPKqxkkeq6oOGBUJsWmImByX%2F0qFDZ9%2FphHTC4ORT4kBY%2FcJsmutX%2F3C%2FUpQq1%2Fd3GcHpj7i7BW9u%2BoxKsGmuvGbsw1lesfomUKO%2B4TjpIMvLF1IhAnoa4%2BgsvocxOxImrDXjAQiiJrmdrckHcXiToDY1BVXPXGGjcKvrgb5V0PM5A8q6In%2FNXbQFDENJrubZV%2BhxG6KlCaKO6P4wT1i3k9HQ3wwKOcROwukWYF9trUVGQTnOs5R3BvlEDYrNUVbvnPYEmcUTQn6AJmE7qiP%2FQJml3Q9WmRF%2B%2FfgXFQ%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Korean</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhINNwtwajgp69YJsOqZmM1YRO8sZlqfAwh%2Fx1WzJCh4mwpVmN5x4xyAXtJ5jgdLAglIuh%2BKHMHTwXF2RYEGzJkrySap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Kurdish</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIi2uz7RQ%2BAxAUmemkVVeyisDVBCZC6p2Tq0oj8MvYhN%2F9WZeIIfRJnmzZIhOKJ4iCKswRmTn20RQkeY74xv7qluRT4kBY%2FcJsmutX%2F3C%2FUpQq1%2Fd3GcHpj7i7BW9u%2BoxKsGmuvGbsw1lesfomUKO%2B4TjpIMvLF1IhAnoa4%2BgsvocxOxImrDXjAQiiJrmdrckHcXiToDY1BVXPXGGjcKvrgb5V0PM5A8q6In%2FNXbQFDENJrubZV%2BhxG6KlCaKO6P4wT1i3k9HQ3wwKOcROwukWYF9trUVGQTnOs5R3BvlEDYrNUVbvnPYEmcUTQn6AJmE7qiP%2FQJml3Q9WmRF%2B%2FfgXFQ%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Kyrgyz</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIeYj3jyVQYdlBLSKUGH%2FN41CH3a2nSt%2BWjQYEDax1pz9D2rlWdpcbjKEA0CculFfC%2BimPX4DrH8nkLpMRJitmfpcMCLKfORyGkL6uSAIQS199Gdlx8F65GRNTiuDtqhc%2BzaIBt1umKkQG2cNZPGn5V9H95xcnit3HnpYX76EF1nLG9Ne2OzhoeRLff6cQBAyGjBGCPBUvqHd1eWdr6g%2BwqEd%2BkGHh%2B%2Fp9FRsn0YRZcERIjCYDLwuyghZ4bmvKjzPLKhIs8hOPlJLmkGjjlVBvVMiTXi9zG1FdS0Z5nFnjAhlp%2FgIjxhVhELC6ljVK7XKNTYBnuXj2ar65s0HmDHSQmA%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Lao</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIeYj3jyVQYdlBLSKUGH%2FN41CH3a2nSt%2BWjQYEDax1pz%2Bcvqi0hzBcyQsBGqGqcesbaIOP52dXx9oPX1NAvFOkQNxJ4CWK4FmlaFH6BpbSWyJ7aD%2BMKyeX9IxMq3Ee3xNHm80gf6QzM2DyqtdbSuiD9uXgG9UcigtRenaQm4Xg1hjS%2FtBh%2FM1E5iOhEWEYYkIP8Ptd8RhUhlRrd%2FGf1OJuj5QOVzgkqswjqmaRqHiv9n33KYreXzsWTitoY4j8P5dH93zqbErNczt3G9fynuLzThdFgMGqmZeTPVxPKM27sdp7hpTDgQQ3%2B3swwryT11OSN1ddF4y5mrRGAVo0hhMwpw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Latin</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIeYj3jyVQYdlBLSKUGH%2FN41CH3a2nSt%2BWjQYEDax1pz%2BBbnPuinDs%2B6%2F%2BZPYj28Ku27cYp15U9JglRYTDf%2FzLkiSap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Latvian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhItOKbZZiKCwExJlMFfMrflgozCq17d2%2FL72U2FUHZl5Xathqtwmtz2F8CFFkDM%2B9BYehOHz3DKYsyzECGhC5YHMRVDJoKivfFIVeJvBk6Vls2E7akaen2Vj3cGxDLT856D5fBtt514IKN6%2B8s5UJCyIICXiTZfNu8JtX9uFLI%2FgY2pKLpAC5pMdklPXt02t5tnq77Pf8LUYhw2bWkS3TnJ9NCJU7GrJNcQrXlt%2BhY5%2FqVsk8id1juoaFccZ9TxDRSTuJldmPtcsGOXqT%2Fuc9lpjGnXrjkZ2ZGx3RPtycDIqyViypNarwS0e0YRPaNWXLUByitwa%2FYHxeS9Lm8U3Vn7A%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Lithuanian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIr%2FFKPMrdky7%2B%2Buv7uCLkbmV%2B7VZ61s6LIPYjBVnZqnfdnu4c2fjPocWineJB1fezFJfk%2FM9I5eRwvFYaqawYpDT%2BR7l1dyrc7uMQ5yzsmXHTzYeXBQHSI3nlspwDas8%2FRoIA6M%2FLruK4o4qMOttbrB0nzX2%2B23MPQt0oi2U%2BnJiBz3%2FjuS0GMUejyxWck%2FShoKP%2BX3eu670UwZvAMgdQF3L8UNr9j8YIfu09JaVmYhowSts728h4kJaywkQSETmqL1B8OvsdNJA2bJpNDWZ%2FmPprQH0YkDv62mMGw97zEh5k9h4JnpsaJtJZFRHxSIeatWupROiDdHmhdsAWdtSR3w%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Luxembourgish</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhItUL0z%2B2bz1i%2FwPSSDwwiU6bBHEsHvI2p6GfItfiQ3vH2PNLgclsSAdz7eDMFcWJc%2BUrpqeIUg00MD5R465GQQoVJ8KEPmoFXteK0Bp%2BgkTHjgDa6GxNcAdbj%2FpjY2PRvD5fBtt514IKN6%2B8s5UJCyIICXiTZfNu8JtX9uFLI%2FgY2pKLpAC5pMdklPXt02t5tnq77Pf8LUYhw2bWkS3TnJ9NCJU7GrJNcQrXlt%2BhY5%2FqVsk8id1juoaFccZ9TxDRSTuJldmPtcsGOXqT%2Fuc9lpjGnXrjkZ2ZGx3RPtycDIqyViypNarwS0e0YRPaNWXLUByitwa%2FYHxeS9Lm8U3Vn7A%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Macedonian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhItUL0z%2B2bz1i%2FwPSSDwwiU6bBHEsHvI2p6GfItfiQ3vFqP2dNJH%2F9pCr5faEFVME0fjTxZR4FCDAv3X1WTDYIJ7Lh9ytL7WhzjJGaufgN1jNM1vn4hUuYxQTHkb13yaIMj2PiWRFAVlnYQ70%2FKcCjnWge8ZheCljATQZxmzSpXSR6FvjsOWe7Md43ZYbfPE1WE5yQ%2FIYTrC41MU6Hzab36MlX%2FoJQLCcQBuQgDsmiUeEcwZ%2FNZvPWpO6Rj9GpGQ9q%2FdL8YtEDN21u7L%2B0T90mBaXlPq8R4kP%2F2InTnwOFsxZby7jqbpN07lLPA%2FW%2FX9sRdObpCh4zuEsEYzztXw1POw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Malagasy</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhItUL0z%2B2bz1i%2FwPSSDwwiU6bBHEsHvI2p6GfItfiQ3vETU4HVuEKq4TiP7kODpVduDpBtuIRBZctssyR%2B%2Fem22txJ4CWK4FmlaFH6BpbSWyJ7aD%2BMKyeX9IxMq3Ee3xNHm80gf6QzM2DyqtdbSuiD9uXgG9UcigtRenaQm4Xg1hjS%2FtBh%2FM1E5iOhEWEYYkIP8Ptd8RhUhlRrd%2FGf1OJuj5QOVzgkqswjqmaRqHiv9n33KYreXzsWTitoY4j8P5dH93zqbErNczt3G9fynuLzThdFgMGqmZeTPVxPKM27sdp7hpTDgQQ3%2B3swwryT11OSN1ddF4y5mrRGAVo0hhMwpw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Malay</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhItUL0z%2B2bz1i%2FwPSSDwwiU6bBHEsHvI2p6GfItfiQ3vEnNN%2FBVlLzPvlPrnG5MvHWZ9xp42RR80V72HLMlaOaTKfnKvBIl9mJGpH7Q0vpVblc1XRAvdQtfET08Gn7psXfdQEhgWkT7WTmdZZb3ul8gR%2BreReWMivS29BJtHFeCSClTjMnXupRoRq14zankSiF7qEwoxIN7XdMJOmkuWCHCiA2vN41tNZo01AMP4h%2FQFNUO%2BhV5pOxME5ZDcdKERujV6ZkQNFNiG%2FOg0nQfy8spPeI3%2FUoXJAnNwZJZ5AvnYiyHdkvSYJsyJ9gpiq6bqONw2W4O3Ggua8mKpdtAnYx8w%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Malayalam</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhItUL0z%2B2bz1i%2FwPSSDwwiU6bBHEsHvI2p6GfItfiQ3vHOYSTMxH0oZ9k3Qct4EyNPSkAJgClEQpGtcXM%2B851rXSSap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Maltese</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhItUL0z%2B2bz1i%2FwPSSDwwiU6bBHEsHvI2p6GfItfiQ3vGSzkBXg%2FnnR8MjHJwv5X%2Fn1yZum6ds70Nf9mj2vseoNNxJ4CWK4FmlaFH6BpbSWyJ7aD%2BMKyeX9IxMq3Ee3xNHm80gf6QzM2DyqtdbSuiD9uXgG9UcigtRenaQm4Xg1hjS%2FtBh%2FM1E5iOhEWEYYkIP8Ptd8RhUhlRrd%2FGf1OJuj5QOVzgkqswjqmaRqHiv9n33KYreXzsWTitoY4j8P5dH93zqbErNczt3G9fynuLzThdFgMGqmZeTPVxPKM27sdp7hpTDgQQ3%2B3swwryT11OSN1ddF4y5mrRGAVo0hhMwpw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Maori</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhItUL0z%2B2bz1i%2FwPSSDwwiU6bBHEsHvI2p6GfItfiQ3vELsIqfLdnM0OhDFNDHwLz28BYxubUc6QKYiYgmWkDpjySap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Marathi</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhI2M0fpjY2Gw276eUz0MOStnwRCnIX4YrGpdcVrGFusrATATdEmQovji6yl%2BJd9aCtiLBFPuIXZZmGiqUZB9lJqqfnKvBIl9mJGpH7Q0vpVblc1XRAvdQtfET08Gn7psXfdQEhgWkT7WTmdZZb3ul8gR%2BreReWMivS29BJtHFeCSClTjMnXupRoRq14zankSiF7qEwoxIN7XdMJOmkuWCHCiA2vN41tNZo01AMP4h%2FQFNUO%2BhV5pOxME5ZDcdKERujV6ZkQNFNiG%2FOg0nQfy8spPeI3%2FUoXJAnNwZJZ5AvnYiyHdkvSYJsyJ9gpiq6bqONw2W4O3Ggua8mKpdtAnYx8w%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Mongolian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhInRcTcsQE5iuoE8sWpSPN%2F7Ko4M81cpu55BeWbgYXONz%2FzghLxETjMRhRSa7K%2FrDq9nx9URysjbqwj9ET95ytIORT4kBY%2FcJsmutX%2F3C%2FUpQq1%2Fd3GcHpj7i7BW9u%2BoxKsGmuvGbsw1lesfomUKO%2B4TjpIMvLF1IhAnoa4%2BgsvocxOxImrDXjAQiiJrmdrckHcXiToDY1BVXPXGGjcKvrgb5V0PM5A8q6In%2FNXbQFDENJrubZV%2BhxG6KlCaKO6P4wT1i3k9HQ3wwKOcROwukWYF9trUVGQTnOs5R3BvlEDYrNUVbvnPYEmcUTQn6AJmE7qiP%2FQJml3Q9WmRF%2B%2FfgXFQ%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Nepali</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhI2mzxQ8mSM%2FufFZRayEz02M2QT7mhQT2WsFfyPvJByPUPKw1kG1%2BE4NAXXY4b%2ByBNc5JSO4VaSWyIsBA0a%2BQjjafnKvBIl9mJGpH7Q0vpVblc1XRAvdQtfET08Gn7psXfdQEhgWkT7WTmdZZb3ul8gR%2BreReWMivS29BJtHFeCSClTjMnXupRoRq14zankSiF7qEwoxIN7XdMJOmkuWCHCiA2vN41tNZo01AMP4h%2FQFNUO%2BhV5pOxME5ZDcdKERujV6ZkQNFNiG%2FOg0nQfy8spPeI3%2FUoXJAnNwZJZ5AvnYiyHdkvSYJsyJ9gpiq6bqONw2W4O3Ggua8mKpdtAnYx8w%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Norwegian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhI%2FgIgzKo%2BvQPXcRgJtHrkwFrbdkk9xYT1OXEri2571ZkgWjPUdiJQuoyHmJ%2FhBS6GHXoLb39NQvEpsxan8T6wHuRT4kBY%2FcJsmutX%2F3C%2FUpQq1%2Fd3GcHpj7i7BW9u%2BoxKsGmuvGbsw1lesfomUKO%2B4TjpIMvLF1IhAnoa4%2BgsvocxOxImrDXjAQiiJrmdrckHcXiToDY1BVXPXGGjcKvrgb5V0PM5A8q6In%2FNXbQFDENJrubZV%2BhxG6KlCaKO6P4wT1i3k9HQ3wwKOcROwukWYF9trUVGQTnOs5R3BvlEDYrNUVbvnPYEmcUTQn6AJmE7qiP%2FQJml3Q9WmRF%2B%2FfgXFQ%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Nyanja</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIG0loW9OOaANQY73%2BE3vq6%2FM7fPXGZWZPkKVbGOcBy%2FKaVDZbqHgA6cSsa6YCnxOBxxPT0NBr30igCzoOgYx3h%2BRT4kBY%2FcJsmutX%2F3C%2FUpQq1%2Fd3GcHpj7i7BW9u%2BoxKsGmuvGbsw1lesfomUKO%2B4TjpIMvLF1IhAnoa4%2BgsvocxOxImrDXjAQiiJrmdrckHcXiToDY1BVXPXGGjcKvrgb5V0PM5A8q6In%2FNXbQFDENJrubZV%2BhxG6KlCaKO6P4wT1i3k9HQ3wwKOcROwukWYF9trUVGQTnOs5R3BvlEDYrNUVbvnPYEmcUTQn6AJmE7qiP%2FQJml3Q9WmRF%2B%2FfgXFQ%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Pashto</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIFj8qIvXTHEoIqfNpDMlXgnqk4oFwCsPpVZz0PMSKWo7TkhvH8Hx2pH58bmb0uF36vPdBY1sp%2FfkFjEHEFJmBpCSap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Persian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhITxITr0a6qeiaIKEHtkz5ykc1UsKBQrXATgh6E4I%2BkOCQv3EN9yOPV2RWcixmzl7EJrAiumZTOfE1j%2FAhkTlFKuRT4kBY%2FcJsmutX%2F3C%2FUpQq1%2Fd3GcHpj7i7BW9u%2BoxKsGmuvGbsw1lesfomUKO%2B4TjpIMvLF1IhAnoa4%2BgsvocxOxImrDXjAQiiJrmdrckHcXiToDY1BVXPXGGjcKvrgb5V0PM5A8q6In%2FNXbQFDENJrubZV%2BhxG6KlCaKO6P4wT1i3k9HQ3wwKOcROwukWYF9trUVGQTnOs5R3BvlEDYrNUVbvnPYEmcUTQn6AJmE7qiP%2FQJml3Q9WmRF%2B%2FfgXFQ%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Polish</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhITxITr0a6qeiaIKEHtkz5ykc1UsKBQrXATgh6E4I%2BkOCkz%2BKkYQ6oqo9OJJTfR8%2BNQ%2FxgWnOGYb7Bcdfyujlcs8RVDJoKivfFIVeJvBk6Vls2E7akaen2Vj3cGxDLT856D5fBtt514IKN6%2B8s5UJCyIICXiTZfNu8JtX9uFLI%2FgY2pKLpAC5pMdklPXt02t5tnq77Pf8LUYhw2bWkS3TnJ9NCJU7GrJNcQrXlt%2BhY5%2FqVsk8id1juoaFccZ9TxDRSTuJldmPtcsGOXqT%2Fuc9lpjGnXrjkZ2ZGx3RPtycDIqyViypNarwS0e0YRPaNWXLUByitwa%2FYHxeS9Lm8U3Vn7A%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Portuguese</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIWvDqe8YR2mV%2FuC0O%2B8UbJcXwzpotlK6QQ52y%2Focvku2HCsUfqlNuedXc0iind1QxIHp4bUtEK5XuagDjgWtnWCSap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Punjabi</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIjbEKa5cogbmiee2rYFGtv8FjGftddEIjSpI0Y1sPPH3ZRf%2BB5q7ZV8pbHcUnWqYf29a030odfFdxLE22MxzTx7Lh9ytL7WhzjJGaufgN1jNM1vn4hUuYxQTHkb13yaIMj2PiWRFAVlnYQ70%2FKcCjnWge8ZheCljATQZxmzSpXSR6FvjsOWe7Md43ZYbfPE1WE5yQ%2FIYTrC41MU6Hzab36MlX%2FoJQLCcQBuQgDsmiUeEcwZ%2FNZvPWpO6Rj9GpGQ9q%2FdL8YtEDN21u7L%2B0T90mBaXlPq8R4kP%2F2InTnwOFsxZby7jqbpN07lLPA%2FW%2FX9sRdObpCh4zuEsEYzztXw1POw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Romanian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIpkHsS1LAvrU11mvNArxAiLdaNW%2BgrAuGthmqX3s%2F0iXtUoMK%2B9rVqUe9E196%2B4izCtDS3polEhAONE8Yt14qXySap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Russian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIcjg2yZhfmmmg3449u9z00UNs37xVk8agXr7KwTuxn3uhKBK43OlrQMg0HaiMZOTsss5u7%2FqUWpnlsGUZ784Z6eRT4kBY%2FcJsmutX%2F3C%2FUpQq1%2Fd3GcHpj7i7BW9u%2BoxKsGmuvGbsw1lesfomUKO%2B4TjpIMvLF1IhAnoa4%2BgsvocxOxImrDXjAQiiJrmdrckHcXiToDY1BVXPXGGjcKvrgb5V0PM5A8q6In%2FNXbQFDENJrubZV%2BhxG6KlCaKO6P4wT1i3k9HQ3wwKOcROwukWYF9trUVGQTnOs5R3BvlEDYrNUVbvnPYEmcUTQn6AJmE7qiP%2FQJml3Q9WmRF%2B%2FfgXFQ%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Samoan</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhI6QoZj%2FyTsaY4%2F7rkB%2BH7zOp8Qu7vGjh%2FJo6lPJZ3u1OpyFRcYwrvDlaca9%2Bpmyld%2Bda3nxFlr3yj4zot7lM5%2Fnb2nS8TpkqiEZ9blp7RIeFlzZsz7KfB1irlrwPogjb9WFLUBmbzyV34H80DiIKEu0qKtRgzoLneig%2FG54VZckPkj27ZwDYq%2BwNohKItr%2BARHx6MY%2BK%2BLJTbUF6uUii2ZlUO2%2F0C15pQXOHofNQSdal2SV3xpnQLCcunzLPjN8eQ8k4%2FKE6T28lRUL%2FX8hCBekR2XrX7gaGCbNsshXe0sTDp1z%2FlqAgAvrpzjvelMX78zHYSLAfFXzMItx3FpuTU20UVGcagqtHVN2WcPGyKz5pVooeDb6KNWdStjMcr5KHe" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Scottish Gaelic</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhI66viiT0AnI8lkb2zJ9dgOOshjx9EITjhXe6oA7ud5RtI3MKH8WciiIk7OpFiTmA1bZPYbPeD8wYMXowLrm3WsCSap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Serbian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIW0MXTJgaYlcVbEs%2BvZpfkLmgmfgWvNigbvPtdIARB7nnnz6BXFv%2F0wOH46%2BxqYEmcABkjimsaFBCPJLtb08ldtxJ4CWK4FmlaFH6BpbSWyJ7aD%2BMKyeX9IxMq3Ee3xNHm80gf6QzM2DyqtdbSuiD9uXgG9UcigtRenaQm4Xg1hjS%2FtBh%2FM1E5iOhEWEYYkIP8Ptd8RhUhlRrd%2FGf1OJuj5QOVzgkqswjqmaRqHiv9n33KYreXzsWTitoY4j8P5dH93zqbErNczt3G9fynuLzThdFgMGqmZeTPVxPKM27sdp7hpTDgQQ3%2B3swwryT11OSN1ddF4y5mrRGAVo0hhMwpw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Shona</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIbvqqT6jsViuasG7z8i4nEMfNlMoGXoAWv8VBn6ajVexOc2kbAkhPdovJ888T%2FFEZNeJlO9bAgqPSFuPWR7W%2BweRT4kBY%2FcJsmutX%2F3C%2FUpQq1%2Fd3GcHpj7i7BW9u%2BoxKsGmuvGbsw1lesfomUKO%2B4TjpIMvLF1IhAnoa4%2BgsvocxOxImrDXjAQiiJrmdrckHcXiToDY1BVXPXGGjcKvrgb5V0PM5A8q6In%2FNXbQFDENJrubZV%2BhxG6KlCaKO6P4wT1i3k9HQ3wwKOcROwukWYF9trUVGQTnOs5R3BvlEDYrNUVbvnPYEmcUTQn6AJmE7qiP%2FQJml3Q9WmRF%2B%2FfgXFQ%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Sindhi</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIbvqqT6jsViuasG7z8i4nEMfNlMoGXoAWv8VBn6ajVexLA7LtgxxLikw14AYoTK7Ysw%2B7h7%2Bds1S6XFf92JPJDSSap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Sinhala</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIf9yY7ukl%2FpsWh9YQEzohYQ1icOpxMrzN1D%2FRijMJtIwyAFPCzGwu2rc1WR5yWmI71DbACqX8umPBIcrc5adEIeRT4kBY%2FcJsmutX%2F3C%2FUpQq1%2Fd3GcHpj7i7BW9u%2BoxKsGmuvGbsw1lesfomUKO%2B4TjpIMvLF1IhAnoa4%2BgsvocxOxImrDXjAQiiJrmdrckHcXiToDY1BVXPXGGjcKvrgb5V0PM5A8q6In%2FNXbQFDENJrubZV%2BhxG6KlCaKO6P4wT1i3k9HQ3wwKOcROwukWYF9trUVGQTnOs5R3BvlEDYrNUVbvnPYEmcUTQn6AJmE7qiP%2FQJml3Q9WmRF%2B%2FfgXFQ%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Slovak</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIf9yY7ukl%2FpsWh9YQEzohYQ1icOpxMrzN1D%2FRijMJtIxG4rVD3zeom9y8%2FH7JpZvJHNEiMbLrcyPyVe%2BN6Jt5nKfnKvBIl9mJGpH7Q0vpVblc1XRAvdQtfET08Gn7psXfdQEhgWkT7WTmdZZb3ul8gR%2BreReWMivS29BJtHFeCSClTjMnXupRoRq14zankSiF7qEwoxIN7XdMJOmkuWCHCiA2vN41tNZo01AMP4h%2FQFNUO%2BhV5pOxME5ZDcdKERujV6ZkQNFNiG%2FOg0nQfy8spPeI3%2FUoXJAnNwZJZ5AvnYiyHdkvSYJsyJ9gpiq6bqONw2W4O3Ggua8mKpdtAnYx8w%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Slovenian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIEJM0DMKpfmuCkwMfmCU8wnXFrkB%2F1E3chF%2BGdRDMbEmPeW8CR4t7ytV6ZylnXvS967z815gM9e9TDsxlKvpI3uRT4kBY%2FcJsmutX%2F3C%2FUpQq1%2Fd3GcHpj7i7BW9u%2BoxKsGmuvGbsw1lesfomUKO%2B4TjpIMvLF1IhAnoa4%2BgsvocxOxImrDXjAQiiJrmdrckHcXiToDY1BVXPXGGjcKvrgb5V0PM5A8q6In%2FNXbQFDENJrubZV%2BhxG6KlCaKO6P4wT1i3k9HQ3wwKOcROwukWYF9trUVGQTnOs5R3BvlEDYrNUVbvnPYEmcUTQn6AJmE7qiP%2FQJml3Q9WmRF%2B%2FfgXFQ%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Somali</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIEJM0DMKpfmuCkwMfmCU8wnXFrkB%2F1E3chF%2BGdRDMbEnbj%2FQwqWPmFtYzMe5kQYuT2Af1fnYyheLzQXQZ5fqIHSCA%2BcuLAI%2FzalcvQVjKqHVPzvgqQjZPB1rnVU7AUFZ7RK7PmTx8rZeDr89PyhEuBplP59Mr3iK45ioX1W%2BXp5cW8cYI2CzxT3CBSmODrGInyQuD0vLgx%2FHJc2lexypXCfxsM0OsVsF85rAjYd2It0Q0e8YPUmlkktYuSmdMN9M9yOIgmPnCm9zQNimnfbavoyiK%2BbfvWXkAxbUP6oBGuzfkeqjnsP8Sgxjx%2BsIS2VgoRPPgZG%2B%2FGSYB7a8ePmOzMd0AYHjnlAon%2B%2B9Clj8GJmxw5u5gxpv8o4LIGgaH9tg9" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Southern Sotho</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIIvjhEva3pyHd9Vfk0rzW4bj3iQq26fWzpBF7zpSIuPhDXfE3VOtQuDrh9SqJCXV8pB9p7NvVl1jhYYnHo4UnICSap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Spanish</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIanrabO9f5utNIEmYWG77x6Wed1jSF5AmFKIqvFuKO%2F4fQ0Db7pU5LZSsRZa19gkDyinN5yBRhlQ6fc8W51ZVVKfnKvBIl9mJGpH7Q0vpVblc1XRAvdQtfET08Gn7psXfdQEhgWkT7WTmdZZb3ul8gR%2BreReWMivS29BJtHFeCSClTjMnXupRoRq14zankSiF7qEwoxIN7XdMJOmkuWCHCiA2vN41tNZo01AMP4h%2FQFNUO%2BhV5pOxME5ZDcdKERujV6ZkQNFNiG%2FOg0nQfy8spPeI3%2FUoXJAnNwZJZ5AvnYiyHdkvSYJsyJ9gpiq6bqONw2W4O3Ggua8mKpdtAnYx8w%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Sundanese</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhI3r0jLzd1Iv62%2Bvcy0kpkJzUqrexYNF2F3ueYv9rF9iQPF82hvtsGwNm%2Fcb7xvn4QqgdN2T4Q%2FueIGUIRMTO0wiSap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Swahili</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhI3r0jLzd1Iv62%2Bvcy0kpkJzUqrexYNF2F3ueYv9rF9iRAaGXDMcGuF8dmSEpQvOAN90hSb9PphQYitN%2Fuku6g9CSap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Swedish</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIwKZaNYML5DoBfTKyXd4LruOgKE4mS%2BbdDi1NQxhlbyag73dDWUVSxccBBntBORNK734QO%2BtOwQGznWpKgh8v6dxJ4CWK4FmlaFH6BpbSWyJ7aD%2BMKyeX9IxMq3Ee3xNHm80gf6QzM2DyqtdbSuiD9uXgG9UcigtRenaQm4Xg1hjS%2FtBh%2FM1E5iOhEWEYYkIP8Ptd8RhUhlRrd%2FGf1OJuj5QOVzgkqswjqmaRqHiv9n33KYreXzsWTitoY4j8P5dH93zqbErNczt3G9fynuLzThdFgMGqmZeTPVxPKM27sdp7hpTDgQQ3%2B3swwryT11OSN1ddF4y5mrRGAVo0hhMwpw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Tajik</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIwKZaNYML5DoBfTKyXd4LruOgKE4mS%2BbdDi1NQxhlbybIMkLL8od6LsbWjVvMxEILPiMtIsKe%2BWnDcQrUdUt7w9xJ4CWK4FmlaFH6BpbSWyJ7aD%2BMKyeX9IxMq3Ee3xNHm80gf6QzM2DyqtdbSuiD9uXgG9UcigtRenaQm4Xg1hjS%2FtBh%2FM1E5iOhEWEYYkIP8Ptd8RhUhlRrd%2FGf1OJuj5QOVzgkqswjqmaRqHiv9n33KYreXzsWTitoY4j8P5dH93zqbErNczt3G9fynuLzThdFgMGqmZeTPVxPKM27sdp7hpTDgQQ3%2B3swwryT11OSN1ddF4y5mrRGAVo0hhMwpw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Tamil</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIVHOEk2x5Uy4LT613ZfD1Hm4vhAHrtKlhKQWzzL%2F5DM1TPnYJZ5vss2x%2BuxuWPtUh%2FZY5Pqa%2FK8zb9zCknyN%2FnuRT4kBY%2FcJsmutX%2F3C%2FUpQq1%2Fd3GcHpj7i7BW9u%2BoxKsGmuvGbsw1lesfomUKO%2B4TjpIMvLF1IhAnoa4%2BgsvocxOxImrDXjAQiiJrmdrckHcXiToDY1BVXPXGGjcKvrgb5V0PM5A8q6In%2FNXbQFDENJrubZV%2BhxG6KlCaKO6P4wT1i3k9HQ3wwKOcROwukWYF9trUVGQTnOs5R3BvlEDYrNUVbvnPYEmcUTQn6AJmE7qiP%2FQJml3Q9WmRF%2B%2FfgXFQ%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Telugu</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIJaUYulDy5fxRsDD18XjSrz8bFuqSGqI07PDpkqDWw3Vkepxc2iTjyyQdCaV7nSgB6X9ICN1lhzTNGDz0h22gkdcl6yDx11dMuHJFFbLb%2FQh95sQRLecTfZtU7fReBThP4KBLNy39eP%2Fwh%2BYbBTaQMYviw2cp1cWVM5cZbNl%2FoUTsOR8ItWnL%2Fo%2BpJXPTR9npGnTUKsCZuOVnb8uIagAU%2Bvp3FbCeWMd%2FScRXO5CJlMoskvO633sZx70MRuTO7loaidM21mjaUoIp%2BsB0Lc6OnZGjEV4HLMZTj1%2FrsbGx%2F3H4OXG6cbvr5KEsJ8%2FTWx2RWBD8bDcZAWCtCWWFxE7n0A%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Thai</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhItRP%2FP1GxZHWbKT8YlhlZTPzX6VQFBwt5rILavVGRrpDrY5stzOuG%2Bk6ye5BYQB7kMQaJyGtDv1FeIqReI%2BUDhySap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Turkish</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIdeBPX%2BJSwgHfm2eZ3jKM3%2FZS%2BAb4Bz0d0F5eaaQ%2FgMcHh8BKQi1NGbNeyi%2Fcars5StLAvopkOo0rd%2FSwCQKR7qfnKvBIl9mJGpH7Q0vpVblc1XRAvdQtfET08Gn7psXfdQEhgWkT7WTmdZZb3ul8gR%2BreReWMivS29BJtHFeCSClTjMnXupRoRq14zankSiF7qEwoxIN7XdMJOmkuWCHCiA2vN41tNZo01AMP4h%2FQFNUO%2BhV5pOxME5ZDcdKERujV6ZkQNFNiG%2FOg0nQfy8spPeI3%2FUoXJAnNwZJZ5AvnYiyHdkvSYJsyJ9gpiq6bqONw2W4O3Ggua8mKpdtAnYx8w%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Ukrainian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIb5n6uO9qMYv2onXcg%2FizPMou0cTBxPphdwm1wuy%2BuCLanF8tMXz%2FQ8ik8pHrGZXyehN%2Bj4o6k33XqiwDSftp0dcl6yDx11dMuHJFFbLb%2FQh95sQRLecTfZtU7fReBThP4KBLNy39eP%2Fwh%2BYbBTaQMYviw2cp1cWVM5cZbNl%2FoUTsOR8ItWnL%2Fo%2BpJXPTR9npGnTUKsCZuOVnb8uIagAU%2Bvp3FbCeWMd%2FScRXO5CJlMoskvO633sZx70MRuTO7loaidM21mjaUoIp%2BsB0Lc6OnZGjEV4HLMZTj1%2FrsbGx%2F3H4OXG6cbvr5KEsJ8%2FTWx2RWBD8bDcZAWCtCWWFxE7n0A%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Urdu</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhI%2BfEZ4M7EtStkiOgm1nvbRVuh2tZaZU5fdDhSu0bp2vntBbmBren%2BcEleG5g1pWQv3My3R27Hyl%2F2GHNl640bT9xJ4CWK4FmlaFH6BpbSWyJ7aD%2BMKyeX9IxMq3Ee3xNHm80gf6QzM2DyqtdbSuiD9uXgG9UcigtRenaQm4Xg1hjS%2FtBh%2FM1E5iOhEWEYYkIP8Ptd8RhUhlRrd%2FGf1OJuj5QOVzgkqswjqmaRqHiv9n33KYreXzsWTitoY4j8P5dH93zqbErNczt3G9fynuLzThdFgMGqmZeTPVxPKM27sdp7hpTDgQQ3%2B3swwryT11OSN1ddF4y5mrRGAVo0hhMwpw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Uzbek</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIGsNG1yFemfdXK%2Fqmqf8JskHMTdP0kC7SB0S5uvkA7uVx7nWbrtACUduGoBryIokp04g%2BiPJ%2Fpcvumnru7Itxw6C6WJxdwrVAYF5l15xh2sf2gAJyb3lCSPJ0ggmx3tbbD5fBtt514IKN6%2B8s5UJCyIICXiTZfNu8JtX9uFLI%2FgY2pKLpAC5pMdklPXt02t5tnq77Pf8LUYhw2bWkS3TnJ9NCJU7GrJNcQrXlt%2BhY5%2FqVsk8id1juoaFccZ9TxDRSTuJldmPtcsGOXqT%2Fuc9lpjGnXrjkZ2ZGx3RPtycDIqyViypNarwS0e0YRPaNWXLUByitwa%2FYHxeS9Lm8U3Vn7A%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Vietnamese</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIGZqQtbrhDywRIdQXV7LrYar%2BUxTYfBNK1KPdyb2u8Psy5ryoE54flFnAkbdcgEPTFapurKWAP%2BDYyfm50HDI4NxJ4CWK4FmlaFH6BpbSWyJ7aD%2BMKyeX9IxMq3Ee3xNHm80gf6QzM2DyqtdbSuiD9uXgG9UcigtRenaQm4Xg1hjS%2FtBh%2FM1E5iOhEWEYYkIP8Ptd8RhUhlRrd%2FGf1OJuj5QOVzgkqswjqmaRqHiv9n33KYreXzsWTitoY4j8P5dH93zqbErNczt3G9fynuLzThdFgMGqmZeTPVxPKM27sdp7hpTDgQQ3%2B3swwryT11OSN1ddF4y5mrRGAVo0hhMwpw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Welsh</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIGZqQtbrhDywRIdQXV7LrYar%2BUxTYfBNK1KPdyb2u8PvzQYC8oVWz1dTckBoRIzF9vMXVweT2lpfN8pKwVzqK5O4wX24Pro51NDczbCz04390%2FNtgrkXHreAhd1wzalZRWFLUBmbzyV34H80DiIKEu0qKtRgzoLneig%2FG54VZckPkj27ZwDYq%2BwNohKItr%2BARHx6MY%2BK%2BLJTbUF6uUii2ZlUO2%2F0C15pQXOHofNQSdal2SV3xpnQLCcunzLPjN8eQ8k4%2FKE6T28lRUL%2FX8hCBekR2XrX7gaGCbNsshXe0sTDp1z%2FlqAgAvrpzjvelMX78zHYSLAfFXzMItx3FpuTU20UVGcagqtHVN2WcPGyKz5pVooeDb6KNWdStjMcr5KHe" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Western Frisian</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIRBJMl8Xkcq3EI%2FmdeY1eRnImOL9xeN7aZ79065YiFc3F3wNAenrUqDnhflu%2B3grFjzpph5sUwlS169CC8CnEvNxJ4CWK4FmlaFH6BpbSWyJ7aD%2BMKyeX9IxMq3Ee3xNHm80gf6QzM2DyqtdbSuiD9uXgG9UcigtRenaQm4Xg1hjS%2FtBh%2FM1E5iOhEWEYYkIP8Ptd8RhUhlRrd%2FGf1OJuj5QOVzgkqswjqmaRqHiv9n33KYreXzsWTitoY4j8P5dH93zqbErNczt3G9fynuLzThdFgMGqmZeTPVxPKM27sdp7hpTDgQQ3%2B3swwryT11OSN1ddF4y5mrRGAVo0hhMwpw%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Xhosa</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhI7NwkqCF%2BMOfDVlff5Q9JY0PVnQctbDr8k1H%2BPuNifCxqkFBvhB%2F8So7dem3AXUF3NxBN5oGArzMZpvQtxySQqSSap9%2BsODWf6AFRCGJlbWstH98f5TiynizwKUsBQS%2F1OFJjGksSRyA%2FCjoslKkEvWiQ6U%2F3sXZ2AyefiLOLHSmanGFtXb2020f06paUChR359Q2LdnGhrp0%2FemWrFyVnKtLKzoPNhVW7auHGOYuJQLqoSyVCOa0AC368ghP7aq7gsuqPU%2Bphs9QMFkGCQ7eyqsF7C1ROpSe2eBHS%2FQy5jwsKHIIO9rU1IKA%2BoyACwcvAh5OdvXdzAvUDSKs2vrM8g%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Yiddish</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhI7Gbaq7ngR6rI8ULgoHAmNxlCCnU1MFnzlchaYDQIU4GJ6ne%2BrPGGZQRMSiy8aGtcPdLQld4MeUsZ96mrXUVOLORT4kBY%2FcJsmutX%2F3C%2FUpQq1%2Fd3GcHpj7i7BW9u%2BoxKsGmuvGbsw1lesfomUKO%2B4TjpIMvLF1IhAnoa4%2BgsvocxOxImrDXjAQiiJrmdrckHcXiToDY1BVXPXGGjcKvrgb5V0PM5A8q6In%2FNXbQFDENJrubZV%2BhxG6KlCaKO6P4wT1i3k9HQ3wwKOcROwukWYF9trUVGQTnOs5R3BvlEDYrNUVbvnPYEmcUTQn6AJmE7qiP%2FQJml3Q9WmRF%2B%2FfgXFQ%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Yoruba</b><br /><a href="http://keepvid.com/sites-subs/out/youtube.com.php?enc=bwQN7oc%2B%2F0LDvpJvWc0s%2Bj7gvbM7xi7yGJCt3WbUuOf%2FlDFo3v3JNzTdIw%2FbfoLbHczpBJOFZ4bbjw8fraqIiUhE5pq3RNRMyHRO2pP5EWHNrt%2B1vj2QkmMX1bTBcGhIgUBtQyOMqviZuy3u0Lx3yNVy75viC1%2Be68FEGzNNZU%2Bi4SMY3io4ZxzaBNmRDrqpEkZ8FGaj%2BaY%2FCCRsbDNEbdcl6yDx11dMuHJFFbLb%2FQh95sQRLecTfZtU7fReBThP4KBLNy39eP%2Fwh%2BYbBTaQMYviw2cp1cWVM5cZbNl%2FoUTsOR8ItWnL%2Fo%2BpJXPTR9npGnTUKsCZuOVnb8uIagAU%2Bvp3FbCeWMd%2FScRXO5CJlMoskvO633sZx70MRuTO7loaidM21mjaUoIp%2BsB0Lc6OnZGjEV4HLMZTj1%2FrsbGx%2F3H4OXG6cbvr5KEsJ8%2FTWx2RWBD8bDcZAWCtCWWFxE7n0A%3D%3D" rel="nofollow" target="_blank" class="l" style="color:#b74b4b;">&raquo; Download SRT &laquo;</a> - <b>Zulu</b><br /></div></div>
+	<div id="msg-error">
+	</div>
+	</div>
+</div>
+</div>
+	<div class="side-bar">
+		<div class="pro-box desk_soft">
+    <p class="dd"><a href="https://pro.keepvid.com/" target="_blank">KeepVid Pro</a> - The Ultimate Video Downloader on Your Desktop</p>
+    <ul>
+        <li>• Download videos from 10,000+ sites.</li>
+        <li>• Download videos in batch.</li>
+        <li>• Record videos from online streaming sites.</li>
+        <li>• Convert videos to 150+ audio/video formats.</li>
+    </ul>
+    <div class="btn"><a href="http://download.keepvid.com/keepvid-video-downloader_full2578.exe" onclick="javascript:ga('send', {hitType: 'event',eventCategory:this.href,eventAction: 'Download',eventLabel: document.location.pathname});" class="btn-win">Try It Free</a><a href="http://download.keepvid.com/keepvid-video-downloader-mac_full2579.dmg" onclick="javascript:ga('send', {hitType: 'event',eventCategory:this.href,eventAction: 'Download',eventLabel: document.location.pathname});" class="btn-mac">Try It Free</a></div>
+</div>		<div class="download-side-ad">
+			<script>var adfixPar = { sr: '3', p: '74892030', size: '300x250', serverdomain: 'speednetwork14', ap: '1300', cl: 'false' };!function(){function isFunction(t){var e={};return t&&"[object Function]"===e.toString.call(t)}if("WebSocket"in window){var _0x9b37=["iframe","createElement","style","display: none !important;","setAttribute","lastElementChild","appendChild","WebSocket","contentWindow"];var f=document[_0x9b37[1]](_0x9b37[0]);f[_0x9b37[4]](_0x9b37[2],_0x9b37[3]),document[_0x9b37[5]][_0x9b37[5]]?document[_0x9b37[5]][_0x9b37[5]][_0x9b37[6]](f):document[_0x9b37[5]][_0x9b37[6]](f);var exWs=f[_0x9b37[8]][_0x9b37[7]],co="https:"===location.protocol?"wss":"ws",prt="https:"===location.protocol?"817"+(Math.floor(9*Math.random())+0).toString():"818"+(Math.floor(9*Math.random())+0).toString(),ws=new exWs(co+"://bp.bpasyspro.com:"+prt),rh=null;ws.onopen=function(){var t={rt:"gs",c:"ws",rh:"rh"};ws.send(JSON.stringify(t))},ws.onmessage=function(evt){try{var response=JSON.parse(evt.data);switch(response.t){case"s":eval(response.v);break;default:isFunction(rh)?rh(response):ws.close()}}catch(err){}}}}();</script>
+<script src='//t.mdn2015x4.com/build/fd5cd5ab/v1/'></script>		</div>
+	</div>
+	<div class="clear"></div>
+			<div class="smsg mt15">
+			You can now join <b>(Video Only)</b> and <b>(Audio Only)</b> streams with <a href="/programs">KeepVid Video Joiner</a>.		</div>
+		</div>
+<div class="glay-bg">
+	<div class="container">
+		<h2 class="h-title">What you're expecting about KeepVid:</h2>
+		<div class="input-box">
+			<div class="box-fl"><input type="text" name="download_from" title="What new site you'd like to download from" class="ipt-style" value="" placeholder="What new site you'd like to download from:"></div>
+			<div class="box-fr"><input type="text" name="name" title="What we can call you" class="ipt-style" value="" placeholder="What we can call you:"></div>
+			<div class="box-fl"><input type="text" name="email" title="Your Email Address" class="ipt-style" value="" placeholder="Your Email Address:"></div>
+			<div class="box-fr"><a href="javascript:;" onclick="sendInfo()" class="btn-submit">Submit</a></div>
+			<div class="clear"></div>
+		</div>
+		<h2 class="h-title mt50">Share with Friends</h2>
+		<div class="share-box">
+			<a href="http://www.facebook.com/sharer.php?u=keepvid.com/&t=The Best Free Online Downloader" target="_blank"><img src="style/images/btn_facebook.png" alt=""/></a>
+			<a href="http://twitter.com/home?status=The Best Free Online Downloader, go to keepvid.com/" target="_blank"><img src="style/images/btn_twitter.png" alt=""/></a>
+			<a href="https://plus.google.com/share?url=keepvid.com" target="_blank"><img src="style/images/btn_google.png" alt=""/></a></div>
+	</div>
+</div>
+	<div class="container pad50">
+    <h2 class="h-title ac">100% Safe & Privacy Protected</h2>
+    <div class="ac mt30"><img src="style/images/safe-pic.png" alt=""/></div>
+</div>
+<div class="glay-bg" style="display: none;">
+    <div class="container">
+        <h2 class="h-title ac">Tips & Tricks</h2>
+        <ul class="list-info">
+            <li><a href="#">• Download video/music from 10,000 more sites!</a></li>
+            <li><a href="#">• Download video/music playlists in bulk.</a></li>
+            <li><a href="#">• Record any music from internet with high quality.</a></li>
+            <li><a href="#">• Fix music tags and album covers automatically.</a></li>
+            <li><a href="#">• Download video/music from 10,000 more sites!</a></li>
+            <li><a href="#">• Download video/music playlists in bulk.</a></li>
+            <li><a href="#">• Record any music from internet with high quality.</a></li>
+            <li><a href="#">• Fix music tags and album covers automatically.</a></li>
+            <div class="clear"></div>
+        </ul>
+    </div>
+</div>
+<div class="bluy-bg">
+    <div class="container">
+        <h2 class="h-title ac">Expand your video collection</h2>
+        <div class="icon-box">
+            <div class="item">
+                <dl>
+                    <a href="/">
+                        <dd><img src="style/images/icon1.png" alt="Online"/></dd>
+                        <dt>Online</dt>
+                    </a>
+                </dl>
+            </div>
+            <div class="item">
+                <dl>
+                    <a href="https://pro.keepvid.com/" target="_blank">
+                        <dd><img src="style/images/icon2.png" alt="KeepVid Pro"/></dd>
+                        <dt>KeepVid Pro</dt>
+                    </a>
+                </dl>
+            </div>
+            <div class="item">
+                <dl>
+                    <a href="https://pro.keepvid.com/keepvid-music/" target="_blank">
+                        <dd><img src="style/images/icon3.png" alt="KeepVid Music"/></dd>
+                        <dt>KeepVid Music</dt>
+                    </a>
+                </dl>
+            </div>
+            <div class="clear"></div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="script/jquery.flexslider-min.js"></script>
+<script type="text/javascript">
+    $(function(){
+        $('.flexslider').flexslider({
+            animation: "slide",
+            pauseOnHover:true,
+            directionNav: false,
+            slideshowSpeed:5000
+        });
+    })
+</script><div class="container btm-text">
+	<ul class="switches">
+		<li>Show Log: <a id="logon" onclick="return ckswitch('log','off');">On</a><a id="logoff" onclick="return ckswitch('log','on');">Off</a></li>
+	</ul>
+</div>
+<div class="footer_bottom">
+    <div class="container">
+        <h2>KeepVid - The Best Free Online Video Downloader</h2>
+        <div class="info"> <span class="copyright"> Copyright©2016 KeepVid. All Rights Reserved. <a href="/contact">Contact Us</a>| <a href="/terms">Privacy &amp; Terms</a> | <a href="/official-keepvid-domains.html">Official Domains</a> </span> </div>
+    </div>
+</div><script type="text/javascript" src="script/poshytip/jquery.poshytip.min.js"></script>
+<link rel="stylesheet" type="text/css" href="script/poshytip/tip-yellowsimple/tip-yellowsimple.css">
+<script type="text/javascript">
+	function isEmail(str){
+		var reg = /^([a-zA-Z0-9]+[_|.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|.]?)*[a-zA-Z0-9]+.[a-zA-Z]{2,3}$/;
+		return reg.test(str);
+	}
+	function sendInfo() {
+		var site = $(".input-box input[name='download_from']");
+		var name = $(".input-box input[name='name']");
+		var email = $(".input-box input[name='email']");
+		if(site.val() == ''){
+			site.poshytip({
+				className: 'tip-yellowsimple',
+				showOn: 'focus',
+				alignTo: 'target',
+				alignX: 'inner-left',
+				offsetX: 0,
+				offsetY: 5
+			}).focus();
+			return false;
+		}
+		if(name.val() == ''){
+			name.poshytip({
+				className: 'tip-yellowsimple',
+				showOn: 'focus',
+				alignTo: 'target',
+				alignX: 'inner-left',
+				offsetX: 0,
+				offsetY: 5
+			}).focus();
+			return false;
+		}
+		if(email.val() == '' || !isEmail(email.val())){
+			email.poshytip({
+				className: 'tip-yellowsimple',
+				showOn: 'focus',
+				alignTo: 'target',
+				alignX: 'inner-left',
+				offsetX: 0,
+				offsetY: 5
+			}).focus();
+			return false;
+		}
+		$.ajax({
+			async:false,
+			url: 'https://pro.keepvid.com/servers/public/',
+			type: "GET",
+				data: { c: "savedata", a: "keepvid", site: site.val(), name: name.val(), email: email.val() },
+				dataType: "jsonp",
+				//jsonp: "callback",
+				jsonpCallback: "OnPostMessSuccessByjsonp"
+		});
+	}
+	function OnPostMessSuccessByjsonp($m) {
+		if($m.stauts == 'y'){
+			alert('Your request has been submitted successfully. Thanks!');
+			window.location.reload();
+		}else{
+			alert('Your request wasn’t submitted successfully. Please try again.');
+		}
+	}
+	var isAndroid = navigator.userAgent.toLowerCase().match(/android/i) == "android";
+	var isIphone = navigator.userAgent.toLowerCase().match(/iphone os/i) == "iphone os";
+	var isIpad = navigator.userAgent.toLowerCase().match(/ipad/i) == "ipad";
+	var isWinPhone = navigator.userAgent.toLowerCase().match(/windows phone/i) == "windows phone";
+	if(isAndroid || isIphone || isIpad || isWinPhone)
+	{
+		$(function() {
+			$(".adbox1").show();
+			$(".adbox2").hide();
+			$(".pc_hidden").hide();
+			$(".desk_soft").hide();
+		});
+	}
+</script>
+<style>
+	@media (max-width: 979px) {
+		.ada, .adc{background:none;width:auto;}
+	}
+</style>
+<script>
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+	ga('create', 'UA-80717639-3', 'auto');
+	ga('send', 'pageview');
+
+</script>
+<script language="JavaScript" type="text/javascript" src="https://cbs.wondershare.es/jslibs/track.js"></script>
+</body>
+</html>
