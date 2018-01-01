@@ -27,9 +27,6 @@ for line in f.readlines():
 
 topDir = "Words in the news"
 
-def download_file(path, url):
-    request.urlretrieve(url, path)
-
 def download_article(article):
     date = time.strptime(article["date"], "%d %B %Y")
     articleDir = topDir+"/"+str(date.tm_year)+'_'+str(date.tm_mon)+'_'+str(date.tm_mday)
@@ -43,7 +40,7 @@ def download_article(article):
             filetype = li.span.contents[0].split(' (')[0]
             extention = href.split('.')[-1]
             filePath = articleDir+"/"+article["title"]+"_"+filetype+'.'+extention
-            download_file(filePath, href)
+            request.urlretrieve(href, filePath)
 
 for article in articles:
     print(article["date"])
